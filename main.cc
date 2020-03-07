@@ -1,11 +1,14 @@
 #include <iostream>
 #include "libs/food.h"
 #include "libs/robot.h"
+#include "libs/world.h"
 
 using namespace std;
 
 int main(){
 
-	robot Robot;
-	int x = 5;
+	world World;
+	while (!World.done()){
+		World.simulate();
+	}
 }

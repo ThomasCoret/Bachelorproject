@@ -13,6 +13,7 @@ class food{
 	//functionS
 	public:
 		food();
+		food(int,int);
 
 	private:
 

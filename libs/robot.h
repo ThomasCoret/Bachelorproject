@@ -9,14 +9,15 @@ class robot{
 
 	public:
 		int x, y;
-
+		int rotation;
+		float speed;
 	//functionS
 	private:
 
-		
+
 	public:
 		robot();
-
-
+		robot(int,int,int);
+		void simulate();
 };
 #endif
