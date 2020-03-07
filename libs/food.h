@@ -12,7 +12,7 @@ class food{
 
 	//functionS
 	public:
-
+		food();
 
 	private:
 
