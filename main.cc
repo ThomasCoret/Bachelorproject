@@ -7,5 +7,5 @@ using namespace std;
 int main(){
 
 	robot Robot;
-
+	int x = 5;
 }
