@@ -9,6 +9,7 @@ int main(){
 
 	world World;
 	while (!World.done()){
+		cout<<World.frames<<endl;
 		World.simulate();
 	}
 }

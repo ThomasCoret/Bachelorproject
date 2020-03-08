@@ -5,10 +5,10 @@ class food{
 	
 	//variables
 	private:
-		int x, y;
+		
 
 	public:
-
+		int x, y;
 
 	//functionS
 	public:
