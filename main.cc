@@ -9,8 +9,9 @@ int main(){
 	srand (time(NULL));
 	world World;
 	//while (!World.done()){
-		cout<<endl<<World.frames<<endl<<endl;
+	for(int i = 0;i<8;i++){
+		cout<<endl<<World.frames<<endl;
 		World.simulate();
 		World.drawworld();
-	//}
+	}
 }

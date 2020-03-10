@@ -22,13 +22,13 @@ class world{
 
 	//functionS
 	private:
-		bool foodahead(robot temprobot);
+		bool foodahead(std::vector<robot>::size_type);
 		
 	public:
 		world();
 		bool done();
 		void simulate();
-		void moverobot(robot i);
+		void moverobot(std::vector<robot>::size_type);
 		void drawworld();
 };
 #endif
