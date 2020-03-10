@@ -11,10 +11,12 @@ robot::robot(float _x, float _y, int _rotation){
 	x = _x;
 	y = _y;
 	rotation = _rotation;
-	radius = 3.0;
+	radius = 5.0;
+	grabradius = 2.0;
  	speed = 1.0;
 	inputs = 2;
 	hiddenlayers = 4;
+	foodcollected = 0;
 
 	for (int i = 0; i < MAX; i++){
 		//initiate hiddenlayers with random values [0-1]

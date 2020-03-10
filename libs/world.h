@@ -4,6 +4,7 @@
 #include <vector>
 #include <math.h>
 #include <iostream>
+#include <random>
 #include "food.h"
 #include "robot.h"
 
@@ -29,6 +30,7 @@ class world{
 		bool done();
 		void simulate();
 		void moverobot(std::vector<robot>::size_type);
+		void checkfoodcollision(std::vector<robot>::size_type);
 		void drawworld();
 };
 #endif

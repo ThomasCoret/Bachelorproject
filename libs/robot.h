@@ -29,16 +29,21 @@ class robot{
 		int rotation;
 		//current speed of the robot
 		float speed;
-		//radius in which the robot is able to pick up food
+		//radius in which the robot is able to see food;
 		float radius;
+		//radius in which the robot is able to pick up food
+		float grabradius;
+		//amount of food collected
+		int foodcollected;
+		
 	//functionS
 	private:
-
+		void neuralnetwork();
 
 	public:
 		robot();
 		robot(float, float, int);
 		void simulate(bool);
-		void neuralnetwork();
+		
 };
 #endif

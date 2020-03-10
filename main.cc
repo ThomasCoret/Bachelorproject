@@ -11,7 +11,8 @@ int main(){
 	//while (!World.done()){
 	for(int i = 0;i<8;i++){
 		cout<<endl<<World.frames<<endl;
-		World.simulate();
 		World.drawworld();
+		World.simulate();
 	}
+	World.drawworld();
 }
