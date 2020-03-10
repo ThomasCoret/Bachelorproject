@@ -8,12 +8,12 @@ class food{
 		
 
 	public:
-		int x, y;
+		float x, y;
 
 	//functionS
 	public:
 		food();
-		food(int,int);
+		food(float,float);
 
 	private:
 

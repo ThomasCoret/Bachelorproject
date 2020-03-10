@@ -2,9 +2,8 @@
 #define WORLD_H
 
 #include <vector>
-#include <stdlib.h> 
-#include <time.h> 
 #include <math.h>
+#include <iostream>
 #include "food.h"
 #include "robot.h"
 
@@ -19,6 +18,7 @@ class world{
 		int nrobots, nfood;
 		std::vector<robot> robots;
 		std::vector<food> foods;
+		int worlddraw[101][101];
 
 	//functionS
 	private:
@@ -28,7 +28,7 @@ class world{
 		world();
 		bool done();
 		void simulate();
-
-
+		void moverobot(robot i);
+		void drawworld();
 };
 #endif

@@ -6,10 +6,11 @@
 using namespace std;
 
 int main(){
-
+	srand (time(NULL));
 	world World;
-	while (!World.done()){
-		cout<<World.frames<<endl;
+	//while (!World.done()){
+		cout<<endl<<World.frames<<endl<<endl;
 		World.simulate();
-	}
+		World.drawworld();
+	//}
 }
