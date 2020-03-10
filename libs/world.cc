@@ -3,8 +3,8 @@
 
 world::world(){
 	frames = 0;
-	width = 100;
-	height = 100;
+	width = 20;
+	height = 20;
 	nrobots = 10;
 	nfood = 10;
 
@@ -12,7 +12,7 @@ world::world(){
     std::mt19937 rng(dev());
     std::uniform_int_distribution<std::mt19937::result_type> widthdist  (0,width*10); // distribution in range [0, width]
 	std::uniform_int_distribution<std::mt19937::result_type> heightdist (0,height*10); // distribution in range [0, height]
-	std::uniform_int_distribution<std::mt19937::result_type> rotdist (0,8); // distribution in range [0, height]
+	std::uniform_int_distribution<std::mt19937::result_type> rotdist (0,ROT); // distribution in range [0, ]
 
 	for(int i = 0; i < nrobots; i++){
 		//float newx = ((float)(rand() % (width*10)))/10;
@@ -30,11 +30,6 @@ world::world(){
 		food Newfood(newx, newy);
 		foods.push_back(Newfood);
 	}
-	for(int i = 0; i < width+1; i++){
-		for(int j = 0; j < height+1; j++){
-			worlddraw[i][j]= 0;
-		}
-	}
 }
 
 bool world::done(){
@@ -43,10 +38,10 @@ bool world::done(){
 
 void world::simulate(){
 	for(std::vector<robot>::size_type i = 0; i != robots.size(); i++) {
+		checkfoodcollision(i);
 		bool foodaheadbool = foodahead(i);
 		robots[i].simulate(foodaheadbool);
 		moverobot(i);
-		checkfoodcollision(i);
 	}
 	frames++;
 }
@@ -155,39 +150,41 @@ void world::checkfoodcollision(std::vector<robot>::size_type i){
 	float rx = robots[i].x;
 	float ry = robots[i].y;
 	float rr = robots[i].grabradius;
-	for(std::vector<food>::size_type j = 0; j != foods.size(); j++) {
+	for(std::vector<food>::size_type j = 0; j < foods.size(); j++) {
 		float fx = foods[j].x;
 		float fy = foods[j].y;
 		//collision with food
 		if((fx > rx - rr) && (fx < rx + rr) && (fy > ry - rr) && (fy < ry + rr)){
 			robots[i].foodcollected++;
+			std::cout<<"food cord:"<<fx<<";"<<fy<<", robot cord"<<rx<<";"<<ry<<std::endl;
 			foods.erase(foods.begin() + j);
 		}
 	}
 }
 
 void world::drawworld(){
-	
-	for(auto i:robots){
-		worlddraw[(int)round(i.x)][(int)round(i.y)] = 1;
-		std::cout<<"robot x: "<<i.x<<", y= "<<i.y<<", rot: "<<i.rotation<<std::endl;
-	}
-	for(auto i:foods){
-		worlddraw[(int)round(i.x)][(int)round(i.y)] = 2;
-		std::cout<<"food x: "<<i.x<<", y= "<<i.y<<std::endl;
-	}
-	/*
-	for(int i =0; i < width + 1; i++){
-		for (int j = 0; j < height + 1; j++){
-			std::cout<<worlddraw[i][j];
-		}
-		std::cout<<std::endl;
-	} 
-	*/
-	//reset the worlddraw
-	for(int i = 0; i < width +1; i++){
+	int worlddraw[width+1][height+1];
+
+	for(int i = 0; i < width + 1; i++){
 		for(int j = 0; j < height + 1; j++){
 			worlddraw[i][j]= 0;
 		}
 	}
+
+	for(auto i:robots){
+		worlddraw[(int)round(i.x)][(int)round(i.y)] = 1;
+		//std::cout<<"robot x: "<<i.x<<", y= "<<i.y<<", rot: "<<i.rotation<<std::endl;
+	}
+	for(auto i:foods){
+		worlddraw[(int)round(i.x)][(int)round(i.y)] = 2;
+		//std::cout<<"food x: "<<i.x<<", y= "<<i.y<<std::endl;
+	}
+	
+	for(int i =0; i < width + 1; i++){
+		for (int j = 0; j < height + 1; j++){
+			std::cout<<worlddraw[i][j]<<" ";
+		}
+		std::cout<<std::endl;
+	} 
+	
 }

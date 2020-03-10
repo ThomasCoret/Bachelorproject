@@ -8,6 +8,8 @@
 #include "food.h"
 #include "robot.h"
 
+#define ROT 8
+
 class world{
 	
 	//variables
@@ -19,7 +21,6 @@ class world{
 		int nrobots, nfood;
 		std::vector<robot> robots;
 		std::vector<food> foods;
-		int worlddraw[101][101];
 
 	//functionS
 	private:

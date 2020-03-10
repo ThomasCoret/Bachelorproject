@@ -14,5 +14,6 @@ int main(){
 		World.drawworld();
 		World.simulate();
 	}
+	cout<<endl<<World.frames<<endl;
 	World.drawworld();
 }
