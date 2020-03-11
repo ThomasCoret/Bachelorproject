@@ -176,8 +176,13 @@ void world::drawworld(){
 		//std::cout<<"robot x: "<<i.x<<", y= "<<i.y<<", rot: "<<i.rotation<<std::endl;
 	}
 	for(auto i:foods){
+		if(worlddraw[(int)round(i.x)][(int)round(i.y)] >1){
+			worlddraw[(int)round(i.x)][(int)round(i.y)]++;
+		}
+		else{
 		worlddraw[(int)round(i.x)][(int)round(i.y)] = 2;
 		//std::cout<<"food x: "<<i.x<<", y= "<<i.y<<std::endl;
+		}
 	}
 	
 	for(int i =0; i < width + 1; i++){
