@@ -6,8 +6,9 @@ world::world(){
 	width = 20;
 	height = 20;
 	nrobots = 10;
-	nfood = 10;
-
+	maxfood = 10;
+	nfood = maxfood;
+	//random number generating
 	std::random_device dev;
     std::mt19937 rng(dev());
     std::uniform_int_distribution<std::mt19937::result_type> widthdist  (0,width*10); // distribution in range [0, width]
@@ -15,49 +16,76 @@ world::world(){
 	std::uniform_int_distribution<std::mt19937::result_type> rotdist (0,ROT); // distribution in range [0, ]
 
 	for(int i = 0; i < nrobots; i++){
-		//float newx = ((float)(rand() % (width*10)))/10;
-		//float newy = ((float)(rand() % (height*10)))/10;
-		//float newrot = rand() % 8;
 		float newx = ((float)widthdist (rng))/10;
 		float newy = ((float)heightdist(rng))/10;
 		int newrot = widthdist(rng)%8;
-		robot Newrobot(newx, newy, newrot);
+		robot Newrobot(newx, newy, newrot, i);
 		robots.push_back(Newrobot);
 	}
-	for(int i =0;i<nfood;i++){
+	for(int i = 0; i < nfood; i++){
 		float newx = ((float)widthdist (rng))/10;
 		float newy = ((float)heightdist(rng))/10;
-		food Newfood(newx, newy);
+		food Newfood(newx, newy, i);
 		foods.push_back(Newfood);
 	}
 }
 
+void world::randomizeworld(){
+	frames = 0;
+	//random number generating
+	std::random_device dev;
+    std::mt19937 rng(dev());
+    std::uniform_int_distribution<std::mt19937::result_type> widthdist  (0,width*10); // distribution in range [0, width]
+	std::uniform_int_distribution<std::mt19937::result_type> heightdist (0,height*10); // distribution in range [0, height]
+	std::uniform_int_distribution<std::mt19937::result_type> rotdist (0,ROT); // distribution in range [0, ]
+	//remove the food
+	foods.clear();
+	//put new food back 
+	for(int i = 0; i < maxfood; i++){
+		float newx = ((float)widthdist (rng))/10;
+		float newy = ((float)heightdist(rng))/10;
+		food Newfood(newx, newy, i);
+		foods.push_back(Newfood);
+	}
+	//randomize the robots locations
+	for(std::vector<robot>::size_type i = 0; i != robots.size(); i++) {
+		float newx = ((float)widthdist (rng))/10;
+		float newy = ((float)heightdist(rng))/10;
+		robots[i].x = newx;
+		robots[i].y = newy;
+	}
+	nfood = 10;
+}
+
 bool world::done(){
-	return (nfood==0);
+	return (nfood<1);
 }
 
 void world::simulate(){
 	for(std::vector<robot>::size_type i = 0; i != robots.size(); i++) {
 		checkfoodcollision(i);
-		bool foodaheadbool = foodahead(i);
-		robots[i].simulate(foodaheadbool);
+		bool foodaheadbool = foodahead(robots[i].x, robots[i].y, robots[i].radius, robots[i].rotation);
+		bool foodtotheright = foodahead(robots[i].x, robots[i].y, robots[i].radius, robots[i].rotation + 1);
+		bool foodtotheleft = foodahead(robots[i].x, robots[i].y, robots[i].radius, robots[i].rotation - 1);
+		robots[i].simulate(foodaheadbool, foodtotheright, foodtotheleft);
 		moverobot(i);
 	}
 	frames++;
 }
 
-bool world::foodahead(std::vector<robot>::size_type i){
+bool world::foodahead(float x, float y, float radius, int rotation){
 	bool foodaheadbool = false;
-	float x = robots[i].x;
-	float y = robots[i].y;
-	float radius = robots[i].radius;
+	if(rotation == -1)
+		rotation = 7;
+	if(rotation == 8)
+		rotation = 0;
 	//check if any food is ahead of the robot
 	for(auto j : foods){
 		//float diagonaldist = sqrt(i.radius/2);
-		switch (robots[i].rotation){
+		switch (rotation){
 			//robot is looking 'up'
 			case 0:
-				foodaheadbool = foodaheadbool || ((j.x> x-radius/2 && j.x < x+radius/2) && (j.y > y && j.y < y+radius));
+				foodaheadbool = foodaheadbool || ((j.x > x-radius/2 && j.x < x+radius/2) && (j.y > y && j.y < y+radius));
 				break;
 			//right and up
 			case 1:
@@ -150,14 +178,17 @@ void world::checkfoodcollision(std::vector<robot>::size_type i){
 	float rx = robots[i].x;
 	float ry = robots[i].y;
 	float rr = robots[i].grabradius;
+
 	for(std::vector<food>::size_type j = 0; j < foods.size(); j++) {
 		float fx = foods[j].x;
 		float fy = foods[j].y;
 		//collision with food
 		if((fx > rx - rr) && (fx < rx + rr) && (fy > ry - rr) && (fy < ry + rr)){
 			robots[i].foodcollected++;
-			std::cout<<"food cord:"<<fx<<";"<<fy<<", robot cord"<<rx<<";"<<ry<<std::endl;
 			foods.erase(foods.begin() + j);
+			nfood--;
+			//subtract 1 from iterator since we erase the current food
+			j--;
 		}
 	}
 }
@@ -171,11 +202,12 @@ void world::drawworld(){
 		}
 	}
 
-	for(auto i:robots){
+	for(auto i : robots){
 		worlddraw[(int)round(i.x)][(int)round(i.y)] = 1;
 		//std::cout<<"robot x: "<<i.x<<", y= "<<i.y<<", rot: "<<i.rotation<<std::endl;
 	}
-	for(auto i:foods){
+	for(auto i : foods){
+		//if already robot in this place increment the number.
 		if(worlddraw[(int)round(i.x)][(int)round(i.y)] >1){
 			worlddraw[(int)round(i.x)][(int)round(i.y)]++;
 		}
@@ -192,4 +224,24 @@ void world::drawworld(){
 		std::cout<<std::endl;
 	} 
 	
+}
+
+void world::updaterobots(){
+	int maxfoodeaten = -1;
+	float bestinputtohidden[MAX][MAX];
+	float besthiddentooutput[MAX][MAX];
+	//find the most succesfull robot
+	for(auto x : robots){
+		if(x.foodcollected > maxfoodeaten){
+			maxfoodeaten = x.foodcollected;
+			//take best robots genes
+			x.returnith(bestinputtohidden);
+			x.returnhto(besthiddentooutput);
+		}
+	}
+	//give best genes to other robots
+	for(std::vector<robot>::size_type i = 0; i != robots.size(); i++) {
+		robots[i].newith(bestinputtohidden);
+		robots[i].newhto(besthiddentooutput);
+	}
 }

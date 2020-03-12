@@ -5,7 +5,8 @@ food::food(){
 	y=0.0;
 }
 
-food::food(float _x, float _y){
+food::food(float _x, float _y, int _nfood){
 	x = _x;
 	y = _y;
+	nfood = _nfood;
 }

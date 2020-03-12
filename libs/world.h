@@ -4,7 +4,7 @@
 #include <vector>
 #include <math.h>
 #include <iostream>
-#include <random>
+
 #include "food.h"
 #include "robot.h"
 
@@ -18,20 +18,22 @@ class world{
 	public:
 		int frames;
 		int width, height;
-		int nrobots, nfood;
+		int nrobots, nfood, maxfood;
 		std::vector<robot> robots;
 		std::vector<food> foods;
 
 	//functionS
 	private:
-		bool foodahead(std::vector<robot>::size_type);
+		bool foodahead(float, float, float, int);
 		
 	public:
 		world();
+		void randomizeworld();
 		bool done();
 		void simulate();
 		void moverobot(std::vector<robot>::size_type);
 		void checkfoodcollision(std::vector<robot>::size_type);
 		void drawworld();
+		void updaterobots();
 };
 #endif

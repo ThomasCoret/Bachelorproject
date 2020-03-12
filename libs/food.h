@@ -9,11 +9,12 @@ class food{
 
 	public:
 		float x, y;
+		int nfood;
 
 	//functionS
 	public:
 		food();
-		food(float,float);
+		food(float, float, int);
 
 	private:
 
