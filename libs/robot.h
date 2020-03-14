@@ -32,10 +32,6 @@ class robot{
 		int outputs;
 		//amount of hidden layers
 		int hiddenlayers;
-		//width of the world
-		int worldwidth; 
-		//height of the world
-		int worldheight;
 		//learningspeed
 		float alpha;
 
@@ -50,25 +46,40 @@ class robot{
 		float radius;
 		//radius in which the robot is able to pick up food
 		float grabradius;
-		//amount of food collected
-		int foodcollected;
+		//fitness of the robot
+		float fitness;
 		//unique number for the robot
 		int nrobot;
+		//previous rotation (for learning purposes)
+		int prevrotation;
 
 	//functionS
 	private:
+		//run the neural network
 		void neuralnetwork();
+		//functions to calculate whether neuron is activated or not
 		float r(float);
 		float rprime(float);
+		float g(float);
+		float gprime(float);
 
 	public:
 		robot();
 		robot(float, float, int, int);
+		//simulate the robots behaviour based on whether there is food ahead, to the right or to the left.
 		void simulate(bool, bool, bool);
+		//return inputtohidden array
 		void returnith(float[MAX][MAX]);
+		//return hiddentooutput array
 		void returnhto(float[MAX][MAX]);
+		//copy the input array to inputtohidden with small changes
 		void newith(float[MAX][MAX]);
+		//copy the input array to hiddentoouput with small changes
 		void newhto(float[MAX][MAX]);
+		//correct rotation value
+		int fixrotation(int rotation);
+		//adjust the neural network based on what action the robot should have made
+		void qlearn(bool, bool, bool);
 		
 };
 #endif

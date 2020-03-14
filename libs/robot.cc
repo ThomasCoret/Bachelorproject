@@ -12,13 +12,13 @@ robot::robot(float _x, float _y, int _rotation, int _nrobot){
 	y = _y;
 	nrobot = _nrobot;
 	rotation = _rotation;
-	radius = 5.0;
-	grabradius = 2.0;
+	radius = 20.0;
+	grabradius = 3.0;
  	speed = 1.0;
 	inputs = 4;
 	outputs = 3;
 	hiddenlayers = 4;
-	foodcollected = 0;
+	fitness = 0;
 	alpha = 0.1;
 	//bias
 	input[0] = -1;
@@ -50,6 +50,14 @@ float robot::rprime(float x ){
 	return x > 0 ? 1 : 0;
 }
 
+float robot::g(float x){
+	return 1 / ( 1 + exp(-1*x) );
+}
+
+float robot::gprime(float x ){
+	return 1 * g(x) * ( 1 - g(x) );
+}
+
 //simulate the robot, 
 void robot::simulate(bool foodahead, bool foodtotheright, bool foodtotheleft){
 	//setup the inputs for the neural network
@@ -76,7 +84,7 @@ void robot::neuralnetwork(){
 	}
 
 	for(int i = 1; i < hiddenlayers + 1; i++){
-		acthidden[i] = r(inhidden[i]);
+		acthidden[i] = g(inhidden[i]);
 	}
 
 	for(int i = 0; i < outputs; i++){
@@ -86,11 +94,17 @@ void robot::neuralnetwork(){
 	}
 
 	for(int i =0;i<outputs;i++)
-		netoutput[i] = r(inoutput[i]);
+		netoutput[i] = g(inoutput[i]);
+
+	prevrotation = rotation;
 	//update stats based on output
-	rotation += (int)netoutput[0];
-	rotation -= (int) netoutput[1];
-	speed = netoutput[2]; 
+	//netoutput 0 decides whether to turn right
+	rotation += netoutput[0] > 0.5 ? 1 : 0;
+	//netoutput 1 decides whether to turn left
+	rotation -= netoutput[1] > 0.5 ? 1 : 0;
+	//netoutput 2 decides whether to move or not
+	speed = netoutput[2] > 0.5 ? 1 : 0; 
+	rotation = fixrotation(rotation);
 }
 
 void robot::returnith(float inputarray[MAX][MAX]){
@@ -116,6 +130,7 @@ void robot::newith(float inputarray[MAX][MAX]){
 
 	for (int i = 0; i < MAX; i++){
 		for (int j = 0; j < MAX; j++){
+			//add small variation to the recieved genes [-0.05-0.05]
 			inputtohidden[i][j] = inputarray[i][j] + (((float)widthdist (rng))-500)/500 * alpha;
 		}
 	}
@@ -128,7 +143,47 @@ void robot::newhto(float inputarray[MAX][MAX]){
 
 	for (int i = 0; i < MAX; i++){
 		for (int j = 0; j < MAX; j++){
+			//add small variation to the recieved genes
 			hiddentooutput[i][j] = inputarray[i][j] + (((float)widthdist (rng))-500)/500 * alpha;
+		}
+	}
+}
+int robot::fixrotation(int rotation){
+	if(rotation == -1)
+		rotation = 7;
+	if(rotation == 8)
+		rotation = 0;
+	return rotation;
+}
+
+void robot::qlearn(bool ahead, bool right, bool left){
+	//calculate the error for each output
+	float error[outputs];
+	float delta[outputs];
+	float deltahidden[outputs][hiddenlayers];
+	//if food to the right of the robot he should turn right
+	error[0] = right ? 1 - netoutput[0] : 0;
+	//if food to the left of the robot he should turn left
+	error[1] = left ? 1 - netoutput[1] : 0;
+	//robot should always be moving since it is the most efficient
+	error[2] = netoutput[2] > 0.5 ? 0 : 1 - netoutput[2];
+	for(int i = 0; i<outputs; i++){
+		delta[i] = error[i] * gprime(inoutput[i]);
+		for(int j = 1; j<hiddenlayers+1; j++){
+			deltahidden[i][j] = gprime(inoutput[i]) * hiddentooutput[i][j] * delta[i];
+		}
+	}
+
+	//update the weights for each output delta
+	for(int i = 0; i < outputs; i++){
+		for(int j = 0; j < hiddenlayers+1; j++){
+			for(int k = 0; k < inputs; k++){
+				inputtohidden[k][j] += alpha * input[j] * deltahidden[i][j];
+			}
+		}
+
+		for(int j = 0; j < hiddenlayers+1; j++){
+			hiddentooutput[i][j] += alpha * acthidden[j] * delta[i];
 		}
 	}
 }
