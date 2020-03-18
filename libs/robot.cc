@@ -14,8 +14,8 @@ robot::robot(float _x, float _y, int _rotation, int _nrobot){
 	rotation = _rotation;
 	radius = 20.0;
 	grabradius = 3.0;
- 	speed = 1.0;
-	inputs = 4;
+ 	speed = 0.1;
+	inputs = 3;
 	outputs = 3;
 	hiddenlayers = 4;
 	fitness = 0;
@@ -59,14 +59,14 @@ float robot::gprime(float x ){
 }
 
 //simulate the robot, 
-void robot::simulate(bool foodahead, bool foodtotheright, bool foodtotheleft){
+void robot::simulate(float foodahead, float foodtotheright, float foodtotheleft){
 	//setup the inputs for the neural network
-	//first input for the robot is whether he has foodahead in his current rotation
-	input[1] = foodahead;
-	//second input is the current rotation of the robot
-	input[2] = rotation;
+	//first input for the robot is the intensity of food in the 0-60 degrees of the robots fov
+	input[1] = foodtotheleft;
+	//first input for the robot is the intensity of food in the 60-120 degrees of the robots fov
+	input[2] = foodahead;
+	//first input for the robot is the intensity of food in the 120-180 degrees of the robots fov
 	input[3] = foodtotheright;
-	input[4] = foodtotheleft;
 	neuralnetwork();
 }
 
@@ -96,7 +96,6 @@ void robot::neuralnetwork(){
 	for(int i =0;i<outputs;i++)
 		netoutput[i] = g(inoutput[i]);
 
-	prevrotation = rotation;
 	//update stats based on output
 	//netoutput 0 decides whether to turn right
 	rotation += netoutput[0] > 0.5 ? 1 : 0;
@@ -148,15 +147,15 @@ void robot::newhto(float inputarray[MAX][MAX]){
 		}
 	}
 }
-int robot::fixrotation(int rotation){
-	if(rotation == -1)
-		rotation = 7;
-	if(rotation == 8)
-		rotation = 0;
+float robot::fixrotation(float rotation){
+	if(rotation < 0)
+		return 360 + rotation;
+	if(rotation > 360)
+		return rotation-360;
 	return rotation;
 }
 
-void robot::qlearn(bool ahead, bool right, bool left){
+void robot::qlearn(float ahead, float right, float left){
 	//calculate the error for each output
 	float error[outputs];
 	float delta[outputs];

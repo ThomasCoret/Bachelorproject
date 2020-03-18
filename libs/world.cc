@@ -1,6 +1,11 @@
 #include "world.h"
 
 #define fitnessgainfood 10
+#define nrays 10
+#define raywidth 0.3
+#define raylength 10
+#define raystepsize 0.1
+#define ROT 360.0
 
 world::world(bool _generational){
 	generational = _generational;
@@ -18,12 +23,12 @@ world::world(bool _generational){
     std::mt19937 rng(dev());
     std::uniform_int_distribution<std::mt19937::result_type> widthdist  (0,width*10); // distribution in range [0, width]
 	std::uniform_int_distribution<std::mt19937::result_type> heightdist (0,height*10); // distribution in range [0, height]
-	std::uniform_int_distribution<std::mt19937::result_type> rotdist (0,ROT); // distribution in range [0, ]
+	std::uniform_int_distribution<std::mt19937::result_type> rotdist (0,ROT*10); // distribution in range [0, ]
 
 	for(int i = 0; i < nrobots; i++){
 		float newx = ((float)widthdist (rng))/10;
 		float newy = ((float)heightdist(rng))/10;
-		int newrot = widthdist(rng)%8;
+		float newrot = ((float)rotdist (rng))/10;
 		robot Newrobot(newx, newy, newrot, i);
 		robots.push_back(Newrobot);
 	}
@@ -42,7 +47,7 @@ void world::randomizeworld(){
     std::mt19937 rng(dev());
     std::uniform_int_distribution<std::mt19937::result_type> widthdist  (0,width*10); // distribution in range [0, width]
 	std::uniform_int_distribution<std::mt19937::result_type> heightdist (0,height*10); // distribution in range [0, height]
-	std::uniform_int_distribution<std::mt19937::result_type> rotdist (0,ROT); // distribution in range [0, ]
+	std::uniform_int_distribution<std::mt19937::result_type> rotdist (0,ROT); // distribution in range [0, 7]
 	//remove the food
 	foods.clear();
 	//put new food back 
@@ -70,117 +75,86 @@ bool world::done(){
 void world::simulate(){
 	for(std::vector<robot>::size_type i = 0; i != robots.size(); i++) {
 		checkfoodcollision(i);
-		bool foodaheadbool = foodahead(robots[i].x, robots[i].y, robots[i].radius, robots[i].rotation);
-		bool foodtotheright = foodahead(robots[i].x, robots[i].y, robots[i].radius, robots[i].rotation + 1);
-		bool foodtotheleft = foodahead(robots[i].x, robots[i].y, robots[i].radius, robots[i].rotation - 1);
-		robots[i].simulate(foodaheadbool, foodtotheright, foodtotheleft);
+		float collisions[3];
+		for(int j =0 ; j<3; j++){
+			collisions[i] = foodahead(robots[i].x, robots[i].y, robots[i].radius, robots[i].rotation, j);
+		}
+		robots[i].simulate(collisions[0], collisions[1], collisions[2]);
 		//reinforcement learning
 		if(!generational){
-			robots[i].qlearn(foodaheadbool, foodtotheright, foodtotheleft);
+			robots[i].qlearn(collisions[0], collisions[1], collisions[2]);
 		}
 		moverobot(i);
 	}
 	frames++;
 }
 
-bool world::foodahead(float x, float y, float radius, int rotation){
-	bool foodaheadbool = false;
-	rotation = robots[0].fixrotation(rotation);
-	//check if any food is ahead of the robot
-	for(auto j : foods){
-		//float diagonaldist = sqrt(i.radius/2);
-		switch (rotation){
-			//robot is looking 'up'
-			case 0:
-				foodaheadbool = foodaheadbool || ((j.x > x-radius/2 && j.x < x+radius/2) && (j.y > y && j.y < y+radius));
-				break;
-			//right and up
-			case 1:
-				foodaheadbool = foodaheadbool || ((j.x > x && j.x < x+radius) && (j.y>y && j.y < y+radius));
-				break;
-			//right
-			case 2:
-				foodaheadbool = foodaheadbool || ((j.y > y-radius/2 && j.y < y+radius/2) && (j.x > x && j.x < x+radius));
-				break;
-			//right and down
-			case 3:
-				foodaheadbool = foodaheadbool || ((j.x < x && j.x > x-radius) && (j.y > y && j.y < y+radius));
-				break;
-			//down
-			case 4:
-				foodaheadbool = foodaheadbool || ((j.x > x-radius/2 && j.x < x+radius/2) && (j.y < y && j.y > y-radius));
-				break;
-			//down and left
-			case 5:
-				foodaheadbool = foodaheadbool || ((j.x < x && j.x > x-radius) && (j.y < y && j.y > y-radius));
-				break;
-			//left
-			case 6:
-				foodaheadbool = foodaheadbool || ((j.y < y-radius/2 && j.y > y+radius/2) && (j.x < x && j.x > x-radius));
-				break;
-			//up and left
-			case 7:
-				foodaheadbool = foodaheadbool || ((j.x > x && j.x < x+radius) && (j.y < y && j.y > y-radius));
-				break;
+float world::foodahead(float x, float y, float radius, float rotation, int n){
+	float intensity = 0;
 
+	for(int i = 0; i<nrays; i++){
+		intensity += (1/nrays) * castray(x,y,rotation+i*(60/nrays));
+	}
+
+	return intensity;
+}
+
+float world::castray(float x, float y, float degree){
+	float originalx = x;
+	float originaly = y;
+	float xslope = xcomputeslope(degree);
+	float yslope = ycomputeslope(degree);
+	for(float i = 0; i < raylength; i += raystepsize){
+		for(std::vector<food>::size_type j = 0; j < foods.size(); j++) {
+			float fx = foods[j].x;
+			float fy = foods[j].y;
+			//collision with food
+			if((fx > x - raywidth) && (fx < x + raywidth) && (fy > y - raywidth) && (fy < y + raywidth)){
+				//return length to food
+				return abs(originalx - fx) + abs(originaly - fy);
+			}
+			x+= raystepsize * xslope;
+			y+= raystepsize * yslope;
 		}
 	}
-	return foodaheadbool;
+	return 0;
+}
+
+float world::xcomputeslope(float degree){
+	if(degree < 0.1 || degree > 359.9){
+		return 0;
+	}
+	if(degree > 179.9 && degree < 180.1)
+		return 0;
+	if(degree > 89.9 && degree <90.1)
+		return 1;
+	if(degree >269.9 && degree <270.1)
+		return -1;
+	return (cos(degree)/sin(degree));
+
+}
+
+float world::ycomputeslope(float degree){
+	if(degree < 0.1 || degree > 359.9){
+		return 1;
+	}
+	if(degree > 179.9 && degree < 180.1)
+		return -1;
+	if(degree > 89.9 && degree <90.1)
+		return 0;
+	if(degree >269.9 && degree <270.1)
+		return 0;
+	return (sin(degree)/cos(degree));
 }
 
 void world::moverobot(std::vector<robot>::size_type i){
 	float robotx = robots[i].x;
 	float roboty = robots[i].y;
-	switch(robots[i].rotation){
-		//robot is looking 'up'
-			case 0:
-				robots[i].y += robots[i].speed;
-				if(robots[i].y > height) robots[i].y = height;
-				break;
-			//right and up
-			case 1:
-				robots[i].y += robots[i].speed/2;
-				robots[i].x += robots[i].speed/2;
-				if(robots[i].y > height) robots[i].y = height;
-				if(robots[i].x > width)  robots[i].x = width;
-				break;
-			//right
-			case 2:
-				robots[i].x += robots[i].speed;
-				if(robots[i].x > width) robots[i].x = width;
-				break;
-			//right and down
-			case 3:
-				robots[i].y -= robots[i].speed/2;
-				robots[i].x += robots[i].speed/2;
-				if(robots[i].y < 0)     robots[i].y = 0;
-				if(robots[i].x > width) robots[i].x = width;
-				break;
-			//down
-			case 4:
-				robots[i].y -= robots[i].speed;
-				if(robots[i].y < 0) robots[i].y = 0;
-				break;
-			//down and left
-			case 5:
-				robots[i].y -= robots[i].speed/2;
-				robots[i].x -= robots[i].speed/2;
-				if(robots[i].y < 0) robots[i].y = 0;
-				if(robots[i].x < 0) robots[i].x = 0;
-				break;
-			//left
-			case 6:
-				robots[i].x -= robots[i].speed;
-				if(robots[i].x < 0) robots[i].x = 0;
-				break;
-			//up and left
-			case 7:
-				robots[i].y += robots[i].speed/2;
-				robots[i].x -= robots[i].speed/2;
-				if(robots[i].y > height) robots[i].y = height;
-				if(robots[i].x < 0)      robots[i].x = 0;
-				break;
-	}
+	float xslope = xcomputeslope(robots[i].rotation);
+	float yslope = ycomputeslope(robots[i].rotation);
+	robots[i].x += robots[i].speed * xslope;
+	robots[i].y += robots[i].speed * yslope;
+
 	//robots gain fitness for the amount they moved
 	robots[i].fitness += abs(robots[i].x - robotx) + abs(robots[i].y - roboty);
 }
@@ -239,14 +213,7 @@ void world::drawworld(){
 		//std::cout<<"robot x: "<<i.x<<", y= "<<i.y<<", rot: "<<i.rotation<<std::endl;
 	}
 	for(auto i : foods){
-		//if already robot in this place increment the number.
-		//if(worlddraw[(int)round(i.x)][(int)round(i.y)] >1){
 			worlddraw[(int)round(i.x)][(int)round(i.y)] = 'f';
-		/*}
-		else{
-		worlddraw[(int)round(i.x)][(int)round(i.y)] = 2;
-		//std::cout<<"food x: "<<i.x<<", y= "<<i.y<<std::endl;
-		}*/
 	}
 	
 	for(int i =0; i < width + 1; i++){
@@ -262,7 +229,7 @@ char world::robotchar(int rotation){
 	switch(rotation){
 		case 0:
 		case 4:
-			return 'I';
+			return '|';
 		case 1:
 		case 5:
 			return '/';
