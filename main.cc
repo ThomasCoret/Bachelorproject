@@ -3,8 +3,8 @@
 #include "libs/world.h"
 using namespace std;
 
-#define generations 1000
-#define trainingiterations 10000
+#define generations 1
+#define trainingiterations 1
 
 void generationallearning(world World);
 void reinforcementlearning(world World);
@@ -23,9 +23,8 @@ int main(){
 void generationallearning(world World){
 	int its = trainingiterations;
 	for(int i = 0; i < generations; i++){
-		cout<<i<<endl;
 		while (!World.done()&& its > 0){
-			//cout<<endl<<"Current iteration: "<<World.frames<<" food left: "<<World.nfood<<endl;
+			cout<<endl<<"Current generation: "<<i<<" frames: "<<World.frames<<" food left: "<<World.nfood<<endl;
 			//World.drawworld();
 			World.simulate();
 			its--;
@@ -36,7 +35,7 @@ void generationallearning(world World){
 	}
 	//test the trained robots
 	while (!World.done()&& its > 0){
-		cout<<endl<<"Current iteration: "<<World.frames<<" food left: "<<World.nfood<<endl;
+		cout<<endl<<"Current generation: final gen, frames: "<<World.frames<<" food left: "<<World.nfood<<endl;
 		World.drawworld();
 		World.simulate();
 		its--;

@@ -13,7 +13,7 @@ world::world(bool _generational){
 	width = 20;
 	height = 20;
 	if(generational)
-		nrobots = 10;
+		nrobots = 1;
 	else
 		nrobots = 1;
 	maxfood = 10;
@@ -73,11 +73,11 @@ bool world::done(){
 }
 
 void world::simulate(){
-	for(std::vector<robot>::size_type i = 0; i != robots.size(); i++) {
+	for(std::vector<robot>::size_type i = 0; i < robots.size(); i++) {
 		checkfoodcollision(i);
 		float collisions[3];
 		for(int j =0 ; j<3; j++){
-			collisions[i] = foodahead(robots[i].x, robots[i].y, robots[i].radius, robots[i].rotation, j);
+			collisions[j] = foodahead(robots[i].x, robots[i].y, robots[i].radius, robots[i].rotation, j);
 		}
 		robots[i].simulate(collisions[0], collisions[1], collisions[2]);
 		//reinforcement learning
@@ -100,11 +100,26 @@ float world::foodahead(float x, float y, float radius, float rotation, int n){
 }
 
 float world::castray(float x, float y, float degree){
+	char worlddraw[width+1][height+1];
+
+	for(int i = 0; i < width + 1; i++){
+		for(int j = 0; j < height + 1; j++){
+			worlddraw[i][j]= '0';
+		}
+	}
 	float originalx = x;
 	float originaly = y;
 	float xslope = xcomputeslope(degree);
 	float yslope = ycomputeslope(degree);
 	for(float i = 0; i < raylength; i += raystepsize){
+		worlddraw[(int)round(x)][(int)round(y)] = 'r';
+		for(int i =0; i < width + 1; i++){
+			for (int j = 0; j < height + 1; j++){
+				std::cout<<worlddraw[i][j]<<" ";
+			}
+			std::cout<<std::endl;
+		}
+		std::cout<<std::endl;
 		for(std::vector<food>::size_type j = 0; j < foods.size(); j++) {
 			float fx = foods[j].x;
 			float fy = foods[j].y;
@@ -154,7 +169,7 @@ void world::moverobot(std::vector<robot>::size_type i){
 	float yslope = ycomputeslope(robots[i].rotation);
 	robots[i].x += robots[i].speed * xslope;
 	robots[i].y += robots[i].speed * yslope;
-
+	std::cout<<std::endl;
 	//robots gain fitness for the amount they moved
 	robots[i].fitness += abs(robots[i].x - robotx) + abs(robots[i].y - roboty);
 }
