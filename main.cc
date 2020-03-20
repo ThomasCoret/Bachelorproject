@@ -4,7 +4,7 @@
 using namespace std;
 
 #define generations 1
-#define trainingiterations 1
+#define trainingiterations 100
 
 void generationallearning(world World);
 void reinforcementlearning(world World);
@@ -22,6 +22,7 @@ int main(){
 
 void generationallearning(world World){
 	int its = trainingiterations;
+	string faka;
 	for(int i = 0; i < generations; i++){
 		while (!World.done()&& its > 0){
 			cout<<endl<<"Current generation: "<<i<<" frames: "<<World.frames<<" food left: "<<World.nfood<<endl;
@@ -33,15 +34,18 @@ void generationallearning(world World){
 		World.updaterobots();
 		World.randomizeworld();
 	}
+	/*
 	//test the trained robots
 	while (!World.done()&& its > 0){
 		cout<<endl<<"Current generation: final gen, frames: "<<World.frames<<" food left: "<<World.nfood<<endl;
 		World.drawworld();
+		//cin>>faka;
 		World.simulate();
 		its--;
 	}
 	cout<<endl<<"Current iteration: "<<World.frames<<" food left: "<<World.nfood<<endl;
 	World.drawworld();
+	*/
 }
 
 void reinforcementlearning(world World){

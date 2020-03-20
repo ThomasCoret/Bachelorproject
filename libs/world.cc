@@ -6,6 +6,8 @@
 #define raylength 10
 #define raystepsize 0.1
 #define ROT 360.0
+#define FOV 180
+#define NFOVDISTR 3
 
 world::world(bool _generational){
 	generational = _generational;
@@ -47,7 +49,7 @@ void world::randomizeworld(){
     std::mt19937 rng(dev());
     std::uniform_int_distribution<std::mt19937::result_type> widthdist  (0,width*10); // distribution in range [0, width]
 	std::uniform_int_distribution<std::mt19937::result_type> heightdist (0,height*10); // distribution in range [0, height]
-	std::uniform_int_distribution<std::mt19937::result_type> rotdist (0,ROT); // distribution in range [0, 7]
+	std::uniform_int_distribution<std::mt19937::result_type> rotdist (0,ROT*10); // distribution in range [0, 7]
 	//remove the food
 	foods.clear();
 	//put new food back 
@@ -61,6 +63,8 @@ void world::randomizeworld(){
 	for(std::vector<robot>::size_type i = 0; i != robots.size(); i++) {
 		float newx = ((float)widthdist (rng))/10;
 		float newy = ((float)heightdist(rng))/10;
+		float newrot = ((float)rotdist (rng))/10;
+		robots[i].rotation = newrot;
 		robots[i].x = newx;
 		robots[i].y = newy;
 		robots[i].fitness = 0;
@@ -75,8 +79,8 @@ bool world::done(){
 void world::simulate(){
 	for(std::vector<robot>::size_type i = 0; i < robots.size(); i++) {
 		checkfoodcollision(i);
-		float collisions[3];
-		for(int j =0 ; j<3; j++){
+		float collisions[NFOVDISTR];
+		for(int j =0 ; j<NFOVDISTR; j++){
 			collisions[j] = foodahead(robots[i].x, robots[i].y, robots[i].radius, robots[i].rotation, j);
 		}
 		robots[i].simulate(collisions[0], collisions[1], collisions[2]);
@@ -91,87 +95,49 @@ void world::simulate(){
 
 float world::foodahead(float x, float y, float radius, float rotation, int n){
 	float intensity = 0;
-
+	rotation -= FOV/2 + FOV/NFOVDISTR * n;
 	for(int i = 0; i<nrays; i++){
-		intensity += (1/nrays) * castray(x,y,rotation+i*(60/nrays));
+		float ray = castray(x,y,rotation+i*(FOV/NFOVDISTR/nrays));
+		intensity += (float)1.0/nrays * ray;
+		std::cout<<"ray "<<i<<": "<<(float)1.0/nrays * ray<<std::endl;
 	}
-
+	std::cout<<n<<": intensity: "<<intensity<<std::endl;
 	return intensity;
 }
 
 float world::castray(float x, float y, float degree){
-	char worlddraw[width+1][height+1];
-
-	for(int i = 0; i < width + 1; i++){
-		for(int j = 0; j < height + 1; j++){
-			worlddraw[i][j]= '0';
-		}
-	}
 	float originalx = x;
 	float originaly = y;
-	float xslope = xcomputeslope(degree);
-	float yslope = ycomputeslope(degree);
 	for(float i = 0; i < raylength; i += raystepsize){
-		worlddraw[(int)round(x)][(int)round(y)] = 'r';
-		for(int i =0; i < width + 1; i++){
-			for (int j = 0; j < height + 1; j++){
-				std::cout<<worlddraw[i][j]<<" ";
-			}
-			std::cout<<std::endl;
-		}
-		std::cout<<std::endl;
 		for(std::vector<food>::size_type j = 0; j < foods.size(); j++) {
 			float fx = foods[j].x;
 			float fy = foods[j].y;
 			//collision with food
 			if((fx > x - raywidth) && (fx < x + raywidth) && (fy > y - raywidth) && (fy < y + raywidth)){
 				//return length to food
-				return abs(originalx - fx) + abs(originaly - fy);
+				return (float)sqrt(pow(abs(originalx - fx),2) + pow(abs(originaly - fy),2)) / raylength;
 			}
-			x+= raystepsize * xslope;
-			y+= raystepsize * yslope;
 		}
+		x += raystepsize * cos(degree*M_PI/180);
+		y += raystepsize * sin(degree*M_PI/180);
+		if(x>width || x<0||y>height||y<0)
+			i = raylength;
 	}
 	return 0;
-}
-
-float world::xcomputeslope(float degree){
-	if(degree < 0.1 || degree > 359.9){
-		return 0;
-	}
-	if(degree > 179.9 && degree < 180.1)
-		return 0;
-	if(degree > 89.9 && degree <90.1)
-		return 1;
-	if(degree >269.9 && degree <270.1)
-		return -1;
-	return (cos(degree)/sin(degree));
-
-}
-
-float world::ycomputeslope(float degree){
-	if(degree < 0.1 || degree > 359.9){
-		return 1;
-	}
-	if(degree > 179.9 && degree < 180.1)
-		return -1;
-	if(degree > 89.9 && degree <90.1)
-		return 0;
-	if(degree >269.9 && degree <270.1)
-		return 0;
-	return (sin(degree)/cos(degree));
 }
 
 void world::moverobot(std::vector<robot>::size_type i){
 	float robotx = robots[i].x;
 	float roboty = robots[i].y;
-	float xslope = xcomputeslope(robots[i].rotation);
-	float yslope = ycomputeslope(robots[i].rotation);
-	robots[i].x += robots[i].speed * xslope;
-	robots[i].y += robots[i].speed * yslope;
-	std::cout<<std::endl;
+	robots[i].x += raystepsize * cos(robots[i].rotation*M_PI/180);
+	robots[i].y += raystepsize * sin(robots[i].rotation*M_PI/180);
+	if(robots[i].x > width)  robots[i].x = width;
+	if(robots[i].y > height) robots[i].y = height;
+	if(robots[i].x < 0)      robots[i].x = 0;
+	if(robots[i].y < 0)		 robots[i].y = 0;
 	//robots gain fitness for the amount they moved
-	robots[i].fitness += abs(robots[i].x - robotx) + abs(robots[i].y - roboty);
+	robots[i].fitness += sqrt(pow(abs(robots[i].x - robotx),2) + pow(abs(robots[i].y - roboty),2));
+	//std::cout<<"robot "<<i<<" moved: "<<sqrt(pow(abs(robots[i].x - robotx),2) + pow(abs(robots[i].y - roboty),2))<<std::endl;
 }
 
 void world::checkfoodcollision(std::vector<robot>::size_type i){
@@ -225,7 +191,7 @@ void world::drawworld(){
 
 	for(auto i : robots){
 		worlddraw[(int)round(i.x)][(int)round(i.y)] = robotchar(i.rotation);
-		//std::cout<<"robot x: "<<i.x<<", y= "<<i.y<<", rot: "<<i.rotation<<std::endl;
+		std::cout<<"robot x: "<<i.x<<", y= "<<i.y<<", rot: "<<i.rotation<<std::endl;
 	}
 	for(auto i : foods){
 			worlddraw[(int)round(i.x)][(int)round(i.y)] = 'f';
@@ -241,18 +207,5 @@ void world::drawworld(){
 }
 
 char world::robotchar(int rotation){
-	switch(rotation){
-		case 0:
-		case 4:
-			return '|';
-		case 1:
-		case 5:
-			return '/';
-		case 2:
-		case 6:
-			return '-';
-		case 3:
-		case 7:
-			return '\\';
-	}
+	return 'r';
 }

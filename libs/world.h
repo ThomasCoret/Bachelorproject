@@ -29,12 +29,9 @@ class world{
 		float foodahead(float, float, float, float, int);
 		//return a char based on a robots rotation (for drawworld)
 		char robotchar(int rotation);
-		//compute the x slope from the rotation of the robot
-		float xcomputeslope(float);
-		//compute the y slope from the rotation of the robot
-		float ycomputeslope(float);
 		//cast a ray in the direction of the rotation from the passed location
 		float castray(float, float, float);
+
 	
 		
 	public:
