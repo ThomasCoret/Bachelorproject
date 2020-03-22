@@ -1,9 +1,9 @@
 #include "world.h"
 
-#define fitnessgainfood 10
-#define nrays 10
-#define raywidth 0.3
-#define raylength 10
+#define fitnessgainfood 30
+#define nrays 30
+#define raywidth 0.5
+#define raylength 20
 #define raystepsize 0.1
 #define ROT 360.0
 #define FOV 180
@@ -12,13 +12,13 @@
 world::world(bool _generational){
 	generational = _generational;
 	frames = 0;
-	width = 20;
-	height = 20;
+	width = 100;
+	height = 100;
 	if(generational)
-		nrobots = 1;
+		nrobots = 10;
 	else
 		nrobots = 1;
-	maxfood = 10;
+	maxfood = 50;
 	nfood = maxfood;
 	//random number generating
 	std::random_device dev;
@@ -69,7 +69,7 @@ void world::randomizeworld(){
 		robots[i].y = newy;
 		robots[i].fitness = 0;
 	}
-	nfood = 10;
+	nfood = maxfood;
 }
 
 bool world::done(){
@@ -83,7 +83,12 @@ void world::simulate(){
 		for(int j =0 ; j<NFOVDISTR; j++){
 			collisions[j] = foodahead(robots[i].x, robots[i].y, robots[i].radius, robots[i].rotation, j);
 		}
-		robots[i].simulate(collisions[0], collisions[1], collisions[2]);
+		float distance[4];
+		distance[0] = height - robots[i].y;
+		distance[1] = robots[i].x;
+		distance[2] = width - robots[i].x;
+		distance[3] = robots[i].y;
+		robots[i].simulate(collisions[0], collisions[1], collisions[2], distance[0], distance[1], distance[2], distance[3]);
 		//reinforcement learning
 		if(!generational){
 			robots[i].qlearn(collisions[0], collisions[1], collisions[2]);
@@ -99,9 +104,7 @@ float world::foodahead(float x, float y, float radius, float rotation, int n){
 	for(int i = 0; i<nrays; i++){
 		float ray = castray(x,y,rotation+i*(FOV/NFOVDISTR/nrays));
 		intensity += (float)1.0/nrays * ray;
-		std::cout<<"ray "<<i<<": "<<(float)1.0/nrays * ray<<std::endl;
 	}
-	std::cout<<n<<": intensity: "<<intensity<<std::endl;
 	return intensity;
 }
 
@@ -129,8 +132,8 @@ float world::castray(float x, float y, float degree){
 void world::moverobot(std::vector<robot>::size_type i){
 	float robotx = robots[i].x;
 	float roboty = robots[i].y;
-	robots[i].x += raystepsize * cos(robots[i].rotation*M_PI/180);
-	robots[i].y += raystepsize * sin(robots[i].rotation*M_PI/180);
+	robots[i].x += robots[i].speed * cos(robots[i].rotation*M_PI/180);
+	robots[i].y += robots[i].speed * sin(robots[i].rotation*M_PI/180);
 	if(robots[i].x > width)  robots[i].x = width;
 	if(robots[i].y > height) robots[i].y = height;
 	if(robots[i].x < 0)      robots[i].x = 0;
@@ -165,7 +168,7 @@ void world::updaterobots(){
 	float besthiddentooutput[MAX][MAX];
 	//find the most succesfull robot
 	for(auto x : robots){
-		std::cout<<"x.nrobot: "<<x.fitness<<std::endl;
+		std::cout<<robotchar(x.nrobot)<<": "<<x.fitness<<std::endl;
 		if(x.fitness > maxfitness){
 			maxfitness = x.fitness;
 			//take best robots genes
@@ -185,16 +188,18 @@ void world::drawworld(){
 
 	for(int i = 0; i < width + 1; i++){
 		for(int j = 0; j < height + 1; j++){
-			worlddraw[i][j]= '0';
+			worlddraw[i][j]= ' ';
+			if(i == 0 || i == width || j == 0 || j == height )
+				worlddraw[i][j]= '0';
 		}
 	}
 
 	for(auto i : robots){
-		worlddraw[(int)round(i.x)][(int)round(i.y)] = robotchar(i.rotation);
-		std::cout<<"robot x: "<<i.x<<", y= "<<i.y<<", rot: "<<i.rotation<<std::endl;
+		worlddraw[(int)round(i.x)][(int)round(i.y)] = robotchar(i.nrobot);
+		//std::cout<<"robot x: "<<i.x<<", y= "<<i.y<<", rot: "<<i.rotation<<std::endl;
 	}
 	for(auto i : foods){
-			worlddraw[(int)round(i.x)][(int)round(i.y)] = 'f';
+			worlddraw[(int)round(i.x)][(int)round(i.y)] = '@';
 	}
 	
 	for(int i =0; i < width + 1; i++){
@@ -206,6 +211,14 @@ void world::drawworld(){
 	
 }
 
-char world::robotchar(int rotation){
-	return 'r';
+char world::robotchar(int nrobot){
+	//can't use 0
+	if(nrobot<9) {
+		return '1'+ nrobot;
+	}
+	else{
+		char robot = 'a';
+		robot+= nrobot - 9;
+		return robot;	
+	}
 }

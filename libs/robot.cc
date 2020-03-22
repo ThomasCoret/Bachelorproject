@@ -14,8 +14,8 @@ robot::robot(float _x, float _y, int _rotation, int _nrobot){
 	rotation = _rotation;
 	radius = 20.0;
 	grabradius = 3.0;
- 	speed = 0.1;
-	inputs = 3;
+ 	speed = 0.5;
+	inputs = 7;
 	outputs = 3;
 	hiddenlayers = 4;
 	fitness = 0;
@@ -59,7 +59,7 @@ float robot::gprime(float x ){
 }
 
 //simulate the robot, 
-void robot::simulate(float foodahead, float foodtotheright, float foodtotheleft){
+void robot::simulate(float foodahead, float foodtotheright, float foodtotheleft, float disttop,float distleft,float distright,float distbot){
 	//setup the inputs for the neural network
 	//first input for the robot is the intensity of food in the 0-60 degrees of the robots fov
 	input[1] = foodtotheleft;
@@ -67,6 +67,14 @@ void robot::simulate(float foodahead, float foodtotheright, float foodtotheleft)
 	input[2] = foodahead;
 	//first input for the robot is the intensity of food in the 120-180 degrees of the robots fov
 	input[3] = foodtotheright;
+	//distance to top wall
+	input[4] = disttop;
+	//distance to left wall
+	input[5] = distleft;
+	//distance to right wall
+	input[6] = distright;
+	//distance to bottom wall
+	input[7] = distbot;
 	neuralnetwork();
 }
 
@@ -102,7 +110,7 @@ void robot::neuralnetwork(){
 	//netoutput 1 decides whether to turn left
 	rotation -= netoutput[1] > 0.5 ? 1 : 0;
 	//netoutput 2 decides whether to move or not
-	speed = netoutput[2] > 0.5 ? 1 : 0; 
+	//speed = netoutput[2] > 0.5 ? 0.1 : 0; 
 	rotation = fixrotation(rotation);
 }
 
