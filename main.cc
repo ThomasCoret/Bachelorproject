@@ -4,7 +4,7 @@
 #include <fstream>
 using namespace std;
 
-#define generations 2
+#define generations 200
 #define trainingiterations 200
 
 void generationallearning(world World);
@@ -35,7 +35,7 @@ void generationallearning(world World){
 		}
 		cout<<"generation: "<<i<<" food left: "<<World.nfood<<endl;
 		its = trainingiterations;
-		World.drawworld();
+		//World.drawworld();
 		World.updaterobots();
 		outputfile<<i<<";"<<World.currentaveragefitness<<";"<<World.currentmaxfitness<<"\n";
 		World.randomizeworld();
