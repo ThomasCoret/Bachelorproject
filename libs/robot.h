@@ -32,7 +32,7 @@ class robot{
 		//amount of hidden layers
 		int hiddenlayers;
 		//learningspeed
-		float alpha;
+		float learningrate;
 
 	public:
 		//position of robot
@@ -66,7 +66,7 @@ class robot{
 		robot();
 		robot(float, float, int, int);
 		//simulate the robots behaviour based on whether there is food ahead, to the right or to the left.
-		void simulate(float, float, float, float, float, float, float);
+		void simulate(float, float, float, float, float, float);
 		//return inputtohidden array
 		void returnith(float[MAX][MAX]);
 		//return hiddentooutput array

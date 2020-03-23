@@ -22,6 +22,8 @@ class world{
 		int nrobots, nfood, maxfood;
 		std::vector<robot> robots;
 		std::vector<food> foods;
+		float currentmaxfitness;
+		float currentaveragefitness;
 
 	//functionS
 	private:
@@ -31,6 +33,8 @@ class world{
 		char robotchar(int rotation);
 		//cast a ray in the direction of the rotation from the passed location
 		float castray(float, float, float);
+		//distance to wall in the direction of the rotation
+		float distancetowall(float, float, float);
 
 	
 		

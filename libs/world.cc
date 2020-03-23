@@ -27,6 +27,9 @@ world::world(bool _generational){
 	std::uniform_int_distribution<std::mt19937::result_type> heightdist (0,height*10); // distribution in range [0, height]
 	std::uniform_int_distribution<std::mt19937::result_type> rotdist (0,ROT*10); // distribution in range [0, ]
 
+	currentmaxfitness = 0;
+	currentaveragefitness = 0;
+
 	for(int i = 0; i < nrobots; i++){
 		float newx = ((float)widthdist (rng))/10;
 		float newy = ((float)heightdist(rng))/10;
@@ -83,12 +86,11 @@ void world::simulate(){
 		for(int j =0 ; j<NFOVDISTR; j++){
 			collisions[j] = foodahead(robots[i].x, robots[i].y, robots[i].radius, robots[i].rotation, j);
 		}
-		float distance[4];
-		distance[0] = height - robots[i].y;
-		distance[1] = robots[i].x;
-		distance[2] = width - robots[i].x;
-		distance[3] = robots[i].y;
-		robots[i].simulate(collisions[0], collisions[1], collisions[2], distance[0], distance[1], distance[2], distance[3]);
+		float distance[3];
+		distance[0] = distancetowall(robots[i].x, robots[i].y, robots[i].rotation);
+		distance[1] = distancetowall(robots[i].x, robots[i].y, robots[i].rotation - 90.0);
+		distance[2] = distancetowall(robots[i].x, robots[i].y, robots[i].rotation + 90.0);
+		robots[i].simulate(collisions[0], collisions[1], collisions[2], distance[0], distance[1], distance[2]);
 		//reinforcement learning
 		if(!generational){
 			robots[i].qlearn(collisions[0], collisions[1], collisions[2]);
@@ -96,6 +98,22 @@ void world::simulate(){
 		moverobot(i);
 	}
 	frames++;
+}
+
+//works the same as a single ray. 
+float world::distancetowall(float x, float y, float degree){
+	float originalx = x;
+	float originaly = y;
+	while(x > 0 && x<width && y > 0 && y <height){
+		x += raystepsize * cos(degree*M_PI/180);
+		y += raystepsize * sin(degree*M_PI/180);
+	}
+	//make the calculation be exactly on the wall for precision.
+	if(x > width)  x = width;
+	if(y > height) y = height;
+	if(x < 0)      x = 0;
+	if(y < 0)	   y = 0;
+	return (float)sqrt(pow(abs(originalx - x),2) + pow(abs(originaly - y),2));
 }
 
 float world::foodahead(float x, float y, float radius, float rotation, int n){
@@ -166,9 +184,11 @@ void world::updaterobots(){
 	int maxfitness = -1;
 	float bestinputtohidden[MAX][MAX];
 	float besthiddentooutput[MAX][MAX];
+	float avaragefitness = 0;
 	//find the most succesfull robot
 	for(auto x : robots){
 		std::cout<<robotchar(x.nrobot)<<": "<<x.fitness<<std::endl;
+		avaragefitness += x.fitness;
 		if(x.fitness > maxfitness){
 			maxfitness = x.fitness;
 			//take best robots genes
@@ -181,6 +201,8 @@ void world::updaterobots(){
 		robots[i].newith(bestinputtohidden);
 		robots[i].newhto(besthiddentooutput);
 	}
+	currentaveragefitness = avaragefitness / nrobots;
+	currentmaxfitness = maxfitness;
 }
 
 void world::drawworld(){

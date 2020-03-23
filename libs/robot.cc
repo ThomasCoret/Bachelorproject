@@ -15,11 +15,11 @@ robot::robot(float _x, float _y, int _rotation, int _nrobot){
 	radius = 20.0;
 	grabradius = 3.0;
  	speed = 0.5;
-	inputs = 7;
+	inputs = 6;
 	outputs = 3;
 	hiddenlayers = 4;
 	fitness = 0;
-	alpha = 0.1;
+	learningrate = 0.1;
 	//bias
 	input[0] = -1;
 	//bias
@@ -59,7 +59,7 @@ float robot::gprime(float x ){
 }
 
 //simulate the robot, 
-void robot::simulate(float foodahead, float foodtotheright, float foodtotheleft, float disttop,float distleft,float distright,float distbot){
+void robot::simulate(float foodahead, float foodtotheright, float foodtotheleft, float distahead,float distleft,float distright){
 	//setup the inputs for the neural network
 	//first input for the robot is the intensity of food in the 0-60 degrees of the robots fov
 	input[1] = foodtotheleft;
@@ -68,13 +68,11 @@ void robot::simulate(float foodahead, float foodtotheright, float foodtotheleft,
 	//first input for the robot is the intensity of food in the 120-180 degrees of the robots fov
 	input[3] = foodtotheright;
 	//distance to top wall
-	input[4] = disttop;
+	input[4] = distahead;
 	//distance to left wall
 	input[5] = distleft;
 	//distance to right wall
 	input[6] = distright;
-	//distance to bottom wall
-	input[7] = distbot;
 	neuralnetwork();
 }
 
@@ -137,8 +135,8 @@ void robot::newith(float inputarray[MAX][MAX]){
 
 	for (int i = 0; i < MAX; i++){
 		for (int j = 0; j < MAX; j++){
-			//add small variation to the recieved genes [-0.05-0.05]
-			inputtohidden[i][j] = inputarray[i][j] + (((float)widthdist (rng))-500)/500 * alpha;
+			//add small variation to the recieved genes relative to the weight [-0.05% - 0.05%]
+			inputtohidden[i][j] = inputarray[i][j] + inputarray[i][j] * (((float)widthdist (rng))-500)/500 * learningrate;
 		}
 	}
 }
@@ -150,8 +148,8 @@ void robot::newhto(float inputarray[MAX][MAX]){
 
 	for (int i = 0; i < MAX; i++){
 		for (int j = 0; j < MAX; j++){
-			//add small variation to the recieved genes
-			hiddentooutput[i][j] = inputarray[i][j] + (((float)widthdist (rng))-500)/500 * alpha;
+			//add small variation to the recieved genes relative to the weight [-0.05% - 0.05%]
+			hiddentooutput[i][j] = inputarray[i][j] + inputarray[i][j] * (((float)widthdist (rng))-500)/500 * learningrate;
 		}
 	}
 }
@@ -185,12 +183,12 @@ void robot::qlearn(float ahead, float right, float left){
 	for(int i = 0; i < outputs; i++){
 		for(int j = 0; j < hiddenlayers+1; j++){
 			for(int k = 0; k < inputs; k++){
-				inputtohidden[k][j] += alpha * input[j] * deltahidden[i][j];
+				inputtohidden[k][j] += learningrate * input[j] * deltahidden[i][j];
 			}
 		}
 
 		for(int j = 0; j < hiddenlayers+1; j++){
-			hiddentooutput[i][j] += alpha * acthidden[j] * delta[i];
+			hiddentooutput[i][j] += learningrate * acthidden[j] * delta[i];
 		}
 	}
 }
