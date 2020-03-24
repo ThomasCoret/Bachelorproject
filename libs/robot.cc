@@ -104,11 +104,12 @@ void robot::neuralnetwork(){
 
 	//update stats based on output
 	//netoutput 0 decides whether to turn right
-	rotation += netoutput[0] > 0.5 ? 1 : 0;
+	rotation += netoutput[0] > 0.5 ? 5 : 0;
 	//netoutput 1 decides whether to turn left
-	rotation -= netoutput[1] > 0.5 ? 1 : 0;
+	rotation -= netoutput[1] > 0.5 ? 5 : 0;
 	//netoutput 2 decides whether to move or not
 	//speed = netoutput[2] > 0.5 ? 0.1 : 0; 
+	//fix the rotation if it got too big or below 0
 	rotation = fixrotation(rotation);
 }
 
