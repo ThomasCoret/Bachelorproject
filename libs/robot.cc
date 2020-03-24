@@ -14,9 +14,11 @@ robot::robot(float _x, float _y, int _rotation, int _nrobot){
 	rotation = _rotation;
 	radius = 20.0;
 	grabradius = 3.0;
+	maxspeed = 0.5;
  	speed = 0.5;
+ 	turnspeed = 5.0;
 	inputs = 6;
-	outputs = 3;
+	outputs = 2;
 	hiddenlayers = 4;
 	fitness = 0;
 	learningrate = 0.1;
@@ -103,12 +105,10 @@ void robot::neuralnetwork(){
 		netoutput[i] = g(inoutput[i]);
 
 	//update stats based on output
-	//netoutput 0 decides whether to turn right
-	rotation += netoutput[0] > 0.5 ? 5 : 0;
-	//netoutput 1 decides whether to turn left
-	rotation -= netoutput[1] > 0.5 ? 5 : 0;
-	//netoutput 2 decides whether to move or not
-	//speed = netoutput[2] > 0.5 ? 0.1 : 0; 
+	//netoutput decides where to turn [-turnspeed,turnspeed]
+	rotation += (netoutput[0] - 0.5) * turnspeed*2;
+	//netoutput 1 decides the speed [0, maxspeed]
+	speed = netoutput[1] * maxspeed; 
 	//fix the rotation if it got too big or below 0
 	rotation = fixrotation(rotation);
 }

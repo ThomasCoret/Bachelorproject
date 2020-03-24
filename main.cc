@@ -5,7 +5,7 @@
 using namespace std;
 
 #define generations 200
-#define trainingiterations 1000
+#define trainingiterations 200
 
 void generationallearning(world World);
 void reinforcementlearning(world World);
@@ -23,7 +23,7 @@ int main(){
 
 void generationallearning(world World){
 	ofstream outputfile;
-	outputfile.open("graphs/training1000.txt");
+	outputfile.open("graphs/base.txt");
 	int its = trainingiterations;
 	string faka;
 	for(int i = 0; i < generations; i++){

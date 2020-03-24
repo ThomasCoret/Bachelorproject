@@ -14,8 +14,7 @@ class robot{
 	private:
 		//inputs for the neural network
 		float input[MAX];
-		//weights from input to hidden
-		float inputtohidden[MAX][MAX];
+		
 		//weights from hidden to output
 		float hiddentooutput[MAX][MAX];
 		//input for the hidden layer
@@ -35,12 +34,18 @@ class robot{
 		float learningrate;
 
 	public:
+		//weights from input to hidden
+		float inputtohidden[MAX][MAX];
 		//position of robot
 		float x, y;
 		//rotation of the robot in degrees 0-360
 		float rotation;
+		//maximum speed of the robot
+		float maxspeed;
 		//current speed of the robot
 		float speed;
+		//current rotation speed of the robot
+		float turnspeed;
 		//radius in which the robot is able to see food;
 		float radius;
 		//radius in which the robot is able to pick up food
