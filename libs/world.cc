@@ -260,7 +260,7 @@ char world::robotchar(int nrobot){
 	}
 }
 
-void world::savebestrobot(){
+void world::savebestrobot(std::string filename){
 	int maxfitness = -1;
 	std::vector<robot>::size_type bestrobot;
 	//find the most succesfull robot
@@ -270,7 +270,7 @@ void world::savebestrobot(){
 			bestrobot = 1;
 		}
 	}
-	robots[bestrobot].savenodes();
+	robots[bestrobot].savenodes(filename);
 }
 
 void world::loadrobot(std::string filename){

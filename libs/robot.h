@@ -92,7 +92,7 @@ class robot{
 		//adjust the learning rate 
 		void adjustlearningrate(float);
 		//save the nodes of the NN to a file
-		void savenodes();
+		void savenodes(std::string);
 		//copy input array to inputtohidden
 		void copyith(float[MAX][MAX]);
 		//copy input array to hiddentoouput

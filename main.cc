@@ -22,52 +22,52 @@ int main(){
 }
 
 void generationallearning(world World){
-	ofstream outputfile;
-	outputfile.open("graphs/smallworld3foodsavedrobottest.txt");
+	bool makingrobot = false;
 	int its = trainingiterations;
+	ofstream outputfile;
+	outputfile.open("graphs/randomrobot.txt");
 	//string faka;
-	World.loadrobot("robotsaves/robot1.bot");
-	/*
-	for(int i = 0; i < generations; i++){
-		while (!World.done()&& its > 0){
-			//cout<<endl<<"Current generation: "<<i<<" frames: "<<World.frames<<" food left: "<<World.nfood<<endl;
+	if(makingrobot){
+		for(int i = 0; i < generations; i++){
+			while (!World.done()&& its > 0){
+				//cout<<endl<<"Current generation: "<<i<<" frames: "<<World.frames<<" food left: "<<World.nfood<<endl;
+				//World.drawworld();
+				
+				World.simulate();
+				//cin>>faka;
+				its--;
+			}
+			cout<<"generation: "<<i<<" food left: "<<World.nfood<<endl;
+			its = trainingiterations;
 			//World.drawworld();
-			
-			World.simulate();
-			//cin>>faka;
-			its--;
-		}
-		cout<<"generation: "<<i<<" food left: "<<World.nfood<<endl;
-		its = trainingiterations;
-		//World.drawworld();
-		//every generation the learningrate of the robots is adapted 
-		World.updaterobots(1/generations);
-		//save the best robot of the last generation
-		if(i == generations -1){
-			World.savebestrobot();
-		}
-		outputfile<<i<<";"<<World.currentaveragefitness<<";"<<World.currentmaxfitness<<"\n";
-		World.randomizeworld();
+			//every generation the learningrate of the robots is adapted 
+			World.updaterobots(1/generations);
+			//save the best robot of the last generation
+			if(i == generations -1){
+				World.savebestrobot("robotsaves/robot2");
+			}
+			outputfile<<i<<";"<<World.currentaveragefitness<<";"<<World.currentmaxfitness<<"\n";
+			World.randomizeworld();
 
-	} */
-	
-	//test the trained robots
-	for(int i = 0; i < generations; i++){
-		while (!World.done()&& its > 0){
-			//cout<<endl<<"Current generation: testrobot, frames: "<<World.frames<<" food left: "<<World.nfood<<endl;
-			//World.drawworld();
-			//cin>>faka;
-			World.simulate();
-			its--;
-		}
-		cout<<"generation: "<<i<<" food left: "<<World.nfood<<endl;
-		its = trainingiterations;
-		outputfile<<i<<";"<<World.getaveragefitness()<<";"<<World.getmaxfitness()<<"\n";
-		World.randomizeworld();
-	}	
-	cout<<endl<<"Current iteration: final gen, food left: "<<World.nfood<<endl;
-	//World.drawworld();
-	
+		} 
+	}
+	else{
+		//World.loadrobot("robotsaves/robot1.bot");
+		//test the trained robots
+		for(int i = 0; i < generations; i++){
+			while (!World.done()&& its > 0){
+				//cout<<endl<<"Current generation: testrobot, frames: "<<World.frames<<" food left: "<<World.nfood<<endl;
+				//World.drawworld();
+				//cin>>faka;
+				World.simulate();
+				its--;
+			}
+			cout<<"generation: "<<i<<" food left: "<<World.nfood<<endl;
+			its = trainingiterations;
+			outputfile<<i<<";"<<World.getaveragefitness()<<";"<<World.getmaxfitness()<<"\n";
+			World.randomizeworld();
+		}	
+	}
 	outputfile.close();
 	
 }

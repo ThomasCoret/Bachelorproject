@@ -55,7 +55,7 @@ class world{
 		//draw the current world in the console
 		void drawworld();
 		//save the nodes of the best robot to a file
-		void savebestrobot();
+		void savebestrobot(std::string);
 		//load robot from .bot file
 		void loadrobot(std::string);
 		//get the average fitness of the current robots

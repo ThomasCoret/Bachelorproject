@@ -220,9 +220,9 @@ void robot::adjustlearningrate(float adapt){
 	learningrate -= adapt * totalshift;
 }
 
-void robot::savenodes(){
+void robot::savenodes(std::string filename){
 	std::ofstream outputfile;
-	outputfile.open("robotsaves/robot2.bot");
+	outputfile.open(filename);
 
 	for (int i = 0; i < MAX; i++){
 		for (int j = 0; j < MAX; j++){
