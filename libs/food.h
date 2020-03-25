@@ -2,11 +2,6 @@
 #define FOOD_H
 
 class food{
-	
-	//variables
-	private:
-		
-
 	public:
 		float x, y;
 		int nfood;
@@ -15,9 +10,5 @@ class food{
 	public:
 		food();
 		food(float, float, int);
-
-	private:
-
-
 };
 #endif

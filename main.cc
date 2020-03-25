@@ -23,9 +23,11 @@ int main(){
 
 void generationallearning(world World){
 	ofstream outputfile;
-	outputfile.open("graphs/smallworld3food.txt");
+	outputfile.open("graphs/smallworld3foodsavedrobottest.txt");
 	int its = trainingiterations;
-	string faka;
+	//string faka;
+	World.loadrobot("robotsaves/robot1.bot");
+	/*
 	for(int i = 0; i < generations; i++){
 		while (!World.done()&& its > 0){
 			//cout<<endl<<"Current generation: "<<i<<" frames: "<<World.frames<<" food left: "<<World.nfood<<endl;
@@ -47,19 +49,25 @@ void generationallearning(world World){
 		outputfile<<i<<";"<<World.currentaveragefitness<<";"<<World.currentmaxfitness<<"\n";
 		World.randomizeworld();
 
-	}
-	/*
+	} */
+	
 	//test the trained robots
-	while (!World.done()&& its > 0){
-		cout<<endl<<"Current generation: final gen, frames: "<<World.frames<<" food left: "<<World.nfood<<endl;
-		World.drawworld();
-		//cin>>faka;
-		World.simulate();
-		its--;
-	}
+	for(int i = 0; i < generations; i++){
+		while (!World.done()&& its > 0){
+			//cout<<endl<<"Current generation: testrobot, frames: "<<World.frames<<" food left: "<<World.nfood<<endl;
+			//World.drawworld();
+			//cin>>faka;
+			World.simulate();
+			its--;
+		}
+		cout<<"generation: "<<i<<" food left: "<<World.nfood<<endl;
+		its = trainingiterations;
+		outputfile<<i<<";"<<World.getaveragefitness()<<";"<<World.getmaxfitness()<<"\n";
+		World.randomizeworld();
+	}	
 	cout<<endl<<"Current iteration: final gen, food left: "<<World.nfood<<endl;
-	World.drawworld();
-	*/
+	//World.drawworld();
+	
 	outputfile.close();
 	
 }

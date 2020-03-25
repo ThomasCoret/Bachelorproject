@@ -56,6 +56,11 @@ class world{
 		void drawworld();
 		//save the nodes of the best robot to a file
 		void savebestrobot();
-		
+		//load robot from .bot file
+		void loadrobot(std::string);
+		//get the average fitness of the current robots
+		float getaveragefitness();
+		//get the max fitness of the current robots
+		float getmaxfitness();
 };
 #endif

@@ -272,3 +272,63 @@ void world::savebestrobot(){
 	}
 	robots[bestrobot].savenodes();
 }
+
+void world::loadrobot(std::string filename){
+	float inputith[MAX][MAX];
+	float inputhto[MAX][MAX];
+	int x = 0, y = 0;
+	bool ithdone = false;
+	std::string line, currentnumber = "";
+	std::ifstream inputfile(filename);
+	if(inputfile.is_open()){
+		while(getline (inputfile, line)){
+			if(line == "end"){
+				x = 0;
+				y = 0;
+				ithdone = true;
+			}
+			else{
+				for(int i = 0; i < line.length(); i++){
+					//end of current number
+					if(line[i] == ' '){
+						if(!ithdone)
+							inputith[x][y] = std::stof(currentnumber);
+						else
+							inputhto[x][y] = std::stof(currentnumber);
+						y++;
+						currentnumber = "";
+					}	
+					else{
+						currentnumber += line[i];
+					}
+				}
+				x++;
+				y = 0;
+			}
+
+		}
+	}
+	else std::cout<<"can't open file"<<std::endl;
+
+	for(std::vector<robot>::size_type i = 0; i != robots.size(); i++) {
+		robots[i].copyith(inputith);
+		robots[i].copyhto(inputhto);
+	}
+}
+
+float world::getaveragefitness(){
+	float avaragefitness = 0;
+	for(auto x : robots){
+		avaragefitness += x.fitness;
+	}
+	return avaragefitness / nrobots;
+}
+
+float world::getmaxfitness(){
+	float max = -1;
+	for(auto x : robots){
+		if(x.fitness > max)
+			max = x.fitness;
+	}
+	return max;
+}

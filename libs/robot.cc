@@ -158,6 +158,23 @@ void robot::newhto(float inputarray[MAX][MAX]){
 		}
 	}
 }
+
+void robot::copyith(float inputarray[MAX][MAX]){
+	for (int i = 0; i < MAX; i++){
+		for (int j = 0; j < MAX; j++){
+			inputtohidden[i][j] = inputarray[i][j];
+		}
+	}
+}
+
+void robot::copyhto(float inputarray[MAX][MAX]){
+	for (int i = 0; i < MAX; i++){
+		for (int j = 0; j < MAX; j++){
+			hiddentooutput[i][j] = inputarray[i][j];
+		}
+	}
+}
+
 float robot::fixrotation(float rotation){
 	if(rotation < 0)
 		return 360 + rotation;
@@ -205,7 +222,7 @@ void robot::adjustlearningrate(float adapt){
 
 void robot::savenodes(){
 	std::ofstream outputfile;
-	outputfile.open("robotsaves/robot1.bot");
+	outputfile.open("robotsaves/robot2.bot");
 
 	for (int i = 0; i < MAX; i++){
 		for (int j = 0; j < MAX; j++){
@@ -213,6 +230,7 @@ void robot::savenodes(){
 		}
 		outputfile<<"\n";
 	}
+	outputfile<<"end\n";
 	for (int i = 0; i < MAX; i++){
 		for (int j = 0; j < MAX; j++){
 			outputfile<<hiddentooutput[i][j]<<" ";

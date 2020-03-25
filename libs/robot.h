@@ -93,5 +93,10 @@ class robot{
 		void adjustlearningrate(float);
 		//save the nodes of the NN to a file
 		void savenodes();
+		//copy input array to inputtohidden
+		void copyith(float[MAX][MAX]);
+		//copy input array to hiddentoouput
+		void copyhto(float[MAX][MAX]);
+	
 };
 #endif
