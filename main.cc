@@ -1,11 +1,11 @@
 #include "libs/food.h"
 #include "libs/robot.h"
 #include "libs/world.h"
-#include <fstream>
+
 using namespace std;
 
 #define generations 200
-#define trainingiterations 200
+#define trainingiterations 500
 
 void generationallearning(world World);
 void reinforcementlearning(world World);
@@ -23,22 +23,30 @@ int main(){
 
 void generationallearning(world World){
 	ofstream outputfile;
-	outputfile.open("graphs/base.txt");
+	outputfile.open("graphs/smallworld3food.txt");
 	int its = trainingiterations;
 	string faka;
 	for(int i = 0; i < generations; i++){
 		while (!World.done()&& its > 0){
 			//cout<<endl<<"Current generation: "<<i<<" frames: "<<World.frames<<" food left: "<<World.nfood<<endl;
 			//World.drawworld();
+			
 			World.simulate();
+			//cin>>faka;
 			its--;
 		}
 		cout<<"generation: "<<i<<" food left: "<<World.nfood<<endl;
 		its = trainingiterations;
 		//World.drawworld();
-		World.updaterobots();
+		//every generation the learningrate of the robots is adapted 
+		World.updaterobots(1/generations);
+		//save the best robot of the last generation
+		if(i == generations -1){
+			World.savebestrobot();
+		}
 		outputfile<<i<<";"<<World.currentaveragefitness<<";"<<World.currentmaxfitness<<"\n";
 		World.randomizeworld();
+
 	}
 	/*
 	//test the trained robots
@@ -63,11 +71,11 @@ void reinforcementlearning(world World){
 		while (!World.done()&& its > 0){
 			cout<<endl<<"Current iteration: "<<World.frames<<" food left: "<<World.nfood<<endl;
 			World.drawworld();
-			World.simulate();
+			//World.simulate();
 			its--;
 		}
 		its = trainingiterations;
-		World.updaterobots();
+		//World.updaterobots();
 		World.randomizeworld();
 	}
 }

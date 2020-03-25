@@ -1,5 +1,6 @@
 #include "robot.h"
 
+
 //redundant
 robot::robot(){
 	x = 0.0;
@@ -15,13 +16,15 @@ robot::robot(float _x, float _y, int _rotation, int _nrobot){
 	radius = 20.0;
 	grabradius = 3.0;
 	maxspeed = 0.5;
- 	speed = 0.5;
- 	turnspeed = 5.0;
+ 	speed = 1.0;
+ 	turnspeed = 45.0;
 	inputs = 6;
 	outputs = 2;
 	hiddenlayers = 4;
 	fitness = 0;
-	learningrate = 0.1;
+	startlearningrate = 0.2;
+	endlearningrate = 0.01;
+	learningrate = startlearningrate;
 	//bias
 	input[0] = -1;
 	//bias
@@ -138,6 +141,7 @@ void robot::newith(float inputarray[MAX][MAX]){
 		for (int j = 0; j < MAX; j++){
 			//add small variation to the recieved genes relative to the weight [-0.05% - 0.05%]
 			inputtohidden[i][j] = inputarray[i][j] + inputarray[i][j] * (((float)widthdist (rng))-500)/500 * learningrate;
+			//std::cout<<"variatie: "<<inputarray[i][j] * (((float)widthdist (rng))-500)/500 * learningrate<<std::endl;
 		}
 	}
 }
@@ -145,7 +149,7 @@ void robot::newith(float inputarray[MAX][MAX]){
 void robot::newhto(float inputarray[MAX][MAX]){
 	std::random_device dev;
     std::mt19937 rng(dev());
-    std::uniform_int_distribution<std::mt19937::result_type> widthdist  (0,10);
+    std::uniform_int_distribution<std::mt19937::result_type> widthdist  (0,1000);
 
 	for (int i = 0; i < MAX; i++){
 		for (int j = 0; j < MAX; j++){
@@ -192,4 +196,30 @@ void robot::qlearn(float ahead, float right, float left){
 			hiddentooutput[i][j] += learningrate * acthidden[j] * delta[i];
 		}
 	}
+}
+
+void robot::adjustlearningrate(float adapt){
+	float totalshift = startlearningrate - endlearningrate;
+	learningrate -= adapt * totalshift;
+}
+
+void robot::savenodes(){
+	std::ofstream outputfile;
+	outputfile.open("robotsaves/robot1.bot");
+
+	for (int i = 0; i < MAX; i++){
+		for (int j = 0; j < MAX; j++){
+			outputfile<<inputtohidden[i][j]<<" ";
+		}
+		outputfile<<"\n";
+	}
+	for (int i = 0; i < MAX; i++){
+		for (int j = 0; j < MAX; j++){
+			outputfile<<hiddentooutput[i][j]<<" ";
+		}
+		outputfile<<"\n";
+	}
+
+
+	outputfile.close();
 }

@@ -5,6 +5,7 @@
 #include <random>
 #include <stdlib.h> 
 #include <iostream>
+#include <fstream>
 
 #define MAX 20
 
@@ -32,6 +33,10 @@ class robot{
 		int hiddenlayers;
 		//learningspeed
 		float learningrate;
+		//start learningrate
+		float startlearningrate;
+		//end learningrate
+		float endlearningrate;
 
 	public:
 		//weights from input to hidden
@@ -84,6 +89,9 @@ class robot{
 		float fixrotation(float);
 		//adjust the neural network based on what action the robot should have made
 		void qlearn(float, float, float);
-		
+		//adjust the learning rate 
+		void adjustlearningrate(float);
+		//save the nodes of the NN to a file
+		void savenodes();
 };
 #endif
