@@ -1,89 +1,328 @@
-#include "libs/food.h"
-#include "libs/robot.h"
-#include "libs/world.h"
+//#include "libs/food.h"
+//#include "libs/robot.h"
+
+#include "libs/interface.h"
+
 
 using namespace std;
 
 #define generations 200
 #define trainingiterations 500
 
-void generationallearning(world World);
-void reinforcementlearning(world World);
+bool generational = true;
+world World(generational);
 
-int main(){
+bool randomized = false;
+
+int it = 0;
+int gen = 0;
+
+//diffuse light color variables
+GLfloat dlr = 1.0;
+GLfloat dlg = 1.0;
+GLfloat dlb = 1.0;
+
+//ambient light color variables
+GLfloat alr = 1.0;
+GLfloat alg = 1.0;
+GLfloat alb = 1.0;
+
+//light position variables
+GLfloat lx = 0.0;
+GLfloat ly = 0.0;
+GLfloat lz = 1.0;
+GLfloat lw = 0.0;
+
+//interface lighting flags
+int aflag = 0;
+int dflag = 1;
+int mflag = 0;
+
+//commonly used material values
+GLfloat no_mat[] = { 0.0, 0.0, 0.0, 1.0 };
+GLfloat default_ambient[] = {0.2, 0.2, 0.2, 1.0};
+GLfloat mat_ambient[] = { 0.7, 0.7, 0.7, 1.0 };
+GLfloat mat_ambient_color[] = { 0.8, 0.8, 0.2, 1.0 };
+GLfloat mat_diffuse[] = { 0.1, 0.5, 0.8, 1.0 };
+GLfloat default_diffuse[] = {0.8, 0.8, 0.8, 1.0};
+GLfloat mat_specular[] = { 1.0, 1.0, 1.0, 1.0 };
+GLfloat no_shininess[] = { 0.0 };
+GLfloat low_shininess[] = { 5.0 };
+GLfloat high_shininess[] = { 100.0 };
+GLfloat mat_emission[] = {0.3, 0.2, 0.2, 0.0};
+
+float g_posX = -20.0, g_posY = 30.0, g_posZ = World.width/2;
+float g_orientation = 90.0; // y axis
+
+void generationallearning(bool, string);
+void init();
+void update();
+void drawrobots();
+void timer(int);
+int menu(int, char**);
+
+
+int main(int argc, char *argv[]){
 	srand (time(NULL));
-	
-	bool generational = true;
 
-	world World(generational);
-	generational ? generationallearning(World) : reinforcementlearning(World);
+	menu(argc, argv);
 	
-	
+	return 1;
 }
 
-void generationallearning(world World){
-	bool makingrobot = false;
+void newgen(){
+	World.updaterobots(1/generations);
+	World.randomizeworld();
+}
+
+void rungen(){
+	int iterations = 0;
+	cout<<"how many iterations?\n";
+	cin>>iterations;
+	if(iterations<0){
+		cout<<"iterations < 0 not possible\n";
+		return;
+	}
+	while (!World.done()&& iterations > 0){
+		World.simulate();
+		iterations--;
+	}
+}
+
+void drawinglut(int argc, char *argv[]){
+	glutInit(&argc, argv);
+	glutInitDisplayMode (GLUT_DOUBLE | GLUT_DEPTH); //set the display to Double buffer, with depth
+    glutInitWindowSize (500, 500); //set the window size
+    glutInitWindowPosition (650, 200); //set the position of the window
+	glutCreateWindow("Robot simulation v1.0 made by Thomas Coret");
+	init (); //call the init function
+	glMatrixMode(GL_PROJECTION);
+	gluPerspective(120.0, 1.0, 1.0, 1000.0);
+	glEnable(GL_DEPTH_TEST);
+	glutDisplayFunc(&update);
+	//glutKeyboardFunc(&keyboard);
+	glutTimerFunc(50, &timer, 0);
+	glutMainLoop();
+}
+
+void save(){
+	string filename;
+	cout<<"How do u want to name the file?\n";
+	cin>>filename;
+	if(!(filename == "")){
+		World.savebestrobot(filename);
+		cout<<"saved in: robotsaves/"<<filename<<endl;
+	}
+	else
+		cout<<"string is empty\n";
+}
+
+void load(){
+	string filename;
+	cout<<"What is the name of the file (in robotsaves)?\n";
+	cin>>filename;
+	string finalname = "robotsaves/" + filename;
+	if(!(filename == "")){
+		World.loadrobot(finalname);
+		cout<<"loaded from: "<<finalname<<endl;
+	}
+	else
+		cout<<"string is empty\n";
+}
+
+void experiment(){
+	bool savefile = false;
+	char yesorno;
+	string filename = "";
+	cout<<"save performance? (y/n)\n";
+	cin>>yesorno;
+	yesorno = toupper(yesorno);
+	if(yesorno == 'Y'){
+		savefile = true;
+		cout<<"How do u want to name the file?\n";
+		cin>>filename;
+	}
+	generationallearning(savefile, filename);
+}
+
+int menu(int argc, char *argv[]){
+	bool done = false;
+	while(!done){
+		cout<<"Welcome to the menu. Choose by typing the letter between the brackets\n"
+			<<"(R)un the current standard experiment, simulate the (c)urrent generation, Render current generation in (g)lut, (M)ake a new generation of the current generations best robot, (S)ave the current generations best robot, (L)oad in a saved robot, (Q)uit\n";
+		char input;
+		std::cin>>input;
+		input = toupper(input);
+		switch(input){
+			//run the current gen
+			case 'R':
+				std::cout<<"experiment\n";
+				experiment();
+				break;
+			case 'C':
+				std::cout<<"simgen\n";
+				rungen();
+				break;
+			//glut
+			case 'G':
+				std::cout<<"glut\n";
+				drawinglut(argc, argv);
+				break;
+			//new generation
+			case 'M':
+				std::cout<<"newgen\n";
+				newgen();
+				break;
+			//save best robot
+			case 'S':
+				std::cout<<"save\n";
+				save();
+				break;
+			//load robot
+			case 'L':
+				std::cout<<"load\n";
+				load();
+				break;
+			case 'Q':
+				std::cout<<"quit\n";
+				done = true;
+				break;
+			default:
+				cout<<"wrong input"<<std::endl;
+				break;
+
+		}
+	}
+}
+
+void generationallearning(bool save, string filename){
 	int its = trainingiterations;
+	//always need to declarate outputfile
 	ofstream outputfile;
-	outputfile.open("graphs/randomrobot.txt");
-	//string faka;
-	if(makingrobot){
-		for(int i = 0; i < generations; i++){
-			while (!World.done()&& its > 0){
-				//cout<<endl<<"Current generation: "<<i<<" frames: "<<World.frames<<" food left: "<<World.nfood<<endl;
-				//World.drawworld();
-				
-				World.simulate();
-				//cin>>faka;
-				its--;
-			}
-			cout<<"generation: "<<i<<" food left: "<<World.nfood<<endl;
-			its = trainingiterations;
-			//World.drawworld();
-			//every generation the learningrate of the robots is adapted 
-			World.updaterobots(1/generations);
-			//save the best robot of the last generation
-			if(i == generations -1){
-				World.savebestrobot("robotsaves/robot2");
-			}
-			outputfile<<i<<";"<<World.currentaveragefitness<<";"<<World.currentmaxfitness<<"\n";
-			World.randomizeworld();
-
-		} 
-	}
-	else{
-		//World.loadrobot("robotsaves/robot1.bot");
-		//test the trained robots
-		for(int i = 0; i < generations; i++){
-			while (!World.done()&& its > 0){
-				//cout<<endl<<"Current generation: testrobot, frames: "<<World.frames<<" food left: "<<World.nfood<<endl;
-				//World.drawworld();
-				//cin>>faka;
-				World.simulate();
-				its--;
-			}
-			cout<<"generation: "<<i<<" food left: "<<World.nfood<<endl;
-			its = trainingiterations;
-			outputfile<<i<<";"<<World.getaveragefitness()<<";"<<World.getmaxfitness()<<"\n";
-			World.randomizeworld();
-		}	
-	}
-	outputfile.close();
-	
-}
-
-void reinforcementlearning(world World){
-	int its = trainingiterations;
+	//output to file
+	if(save)
+		outputfile.open("graphs/randomrobot.txt");
+	//test the trained robots
 	for(int i = 0; i < generations; i++){
-		cout<<i<<endl;
 		while (!World.done()&& its > 0){
-			cout<<endl<<"Current iteration: "<<World.frames<<" food left: "<<World.nfood<<endl;
-			World.drawworld();
-			//World.simulate();
+			//World.drawworld();
+			World.simulate();
 			its--;
 		}
+		cout<<"generation: "<<i<<" food left: "<<World.nfood<<endl;
 		its = trainingiterations;
-		//World.updaterobots();
+		if(save)
+			outputfile<<i<<";"<<World.getaveragefitness()<<";"<<World.getmaxfitness()<<"\n";
 		World.randomizeworld();
 	}
+	if(save)	
+		outputfile.close();
+	
 }
+
+/************************************************  Glut stuff  ************************************************/
+
+void timer(int value){
+	if(World.done())
+		randomized = false;
+	if(!randomized){
+		World.randomizeworld();
+		randomized = true;
+	}
+	World.simulate();
+	it++;
+	glutPostRedisplay();
+	glutTimerFunc(20, &timer, 0);
+}
+
+void drawOneParticle()
+{
+	glutSolidSphere(1.0, 10, 10);
+}
+
+void drawrobotsandfood(){
+	for(auto robot : World.robots){
+		glPushMatrix();
+		glTranslatef(0.0, robot.y, robot.x);
+		glScalef(1.0,1.0, 1.0);
+		glColor3f(0.6, 0.0,0.1);
+		drawOneParticle();
+		glPopMatrix();	
+	}
+	for(auto food : World.foods){
+		glPushMatrix();
+		glTranslatef(0.0, food.y, food.x);
+		glScalef(1.0,1.0, 1.0);
+		glColor3f(0.5, 0.8, 0.3);
+		drawOneParticle();
+		glPopMatrix();	
+	}
+}
+
+void drawground(){
+	glColor3f(1.0, 1.0, 1.0);
+   // ground plane
+   glBegin(GL_LINE_STRIP);
+   glVertex3f(0.0, 0.0, 0.0  );
+   glVertex3f(0.0, 0.0, World.width);
+   glVertex3f(0.0, World.height, World.width);
+   glVertex3f(0.0, World.height, 0 );
+   glVertex3f(0.0, 0.0, 0.0  );
+   glEnd();
+}
+
+void setmaterials( ){
+	glPushMatrix();
+	glTranslatef(lx,ly,lz);
+	if(mflag==1)
+	{
+	   glMaterialfv(GL_FRONT, GL_AMBIENT, default_ambient);
+       glMaterialfv(GL_FRONT, GL_DIFFUSE, mat_diffuse);
+       glMaterialfv(GL_FRONT, GL_SPECULAR, mat_specular);
+       glMaterialfv(GL_FRONT, GL_SHININESS, high_shininess);
+       glMaterialfv(GL_FRONT, GL_EMISSION, no_mat);
+	}
+	else
+	{
+       glMaterialfv(GL_FRONT, GL_AMBIENT, default_ambient);
+       glMaterialfv(GL_FRONT, GL_DIFFUSE, default_diffuse);
+       glMaterialfv(GL_FRONT, GL_SPECULAR, no_mat);
+       glMaterialfv(GL_FRONT, GL_SHININESS, no_shininess);
+       glMaterialfv(GL_FRONT, GL_EMISSION, no_mat);
+	}
+
+	glPopMatrix();
+}
+
+void update(){
+	glMatrixMode(GL_MODELVIEW);
+	glLoadIdentity();
+	glRotatef(g_orientation, 0.0, 1.0, 0.0); // rotate in y axis
+	glTranslatef(-g_posX, -g_posY, -g_posZ);
+
+	glClear(GL_COLOR_BUFFER_BIT);
+	glClear(GL_DEPTH_BUFFER_BIT);
+	
+	GLfloat DiffuseLight[] = {dlr, dlg, dlb}; //set DiffuseLight[] to the specified values
+    GLfloat AmbientLight[] = {alr, alg, alb}; //set AmbientLight[] to the specified values
+    glLightfv (GL_LIGHT0, GL_DIFFUSE, DiffuseLight); //change the light accordingly
+    glLightfv (GL_LIGHT1, GL_AMBIENT, AmbientLight); //change the light accordingly
+    GLfloat LightPosition[] = {lx, ly, lz, lw}; //set the LightPosition to the specified values
+    glLightfv (GL_LIGHT0, GL_POSITION, LightPosition); //change the light accordingly
+	
+	//setmaterials();
+	//draw ground, robots and food
+	drawground();
+	drawrobotsandfood();
+	glutSwapBuffers();
+}
+
+void init(){
+	glEnable (GL_DEPTH_TEST); //enable the depth testing
+    glEnable (GL_LIGHTING); //enable the lighting
+    glEnable (GL_LIGHT0); //enable LIGHT0, our Diffuse Light
+    glEnable (GL_LIGHT1); //enable LIGHT1, our Ambient Light
+    glShadeModel (GL_SMOOTH); //set the shader to smooth shader
+    glEnable(GL_COLOR_MATERIAL);
+}
+

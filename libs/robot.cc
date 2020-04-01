@@ -218,6 +218,7 @@ void robot::qlearn(float ahead, float right, float left){
 void robot::adjustlearningrate(float adapt){
 	float totalshift = startlearningrate - endlearningrate;
 	learningrate -= adapt * totalshift;
+	std::cout<<"startlr: "<<startlearningrate<<", endlr: "<<endlearningrate<<", curlr: "<<learningrate<<std::endl;
 }
 
 void robot::savenodes(std::string filename){

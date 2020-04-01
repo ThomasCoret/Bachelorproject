@@ -183,24 +183,31 @@ void world::checkfoodcollision(std::vector<robot>::size_type i){
 
 void world::updaterobots(float adapt){
 	int maxfitness = -1;
+	std::vector<robot>::size_type bestrobot = -1;
 	float bestinputtohidden[MAX][MAX];
 	float besthiddentooutput[MAX][MAX];
 	float avaragefitness = 0;
 	//find the most succesfull robot
-	for(auto x : robots){
-		std::cout<<robotchar(x.nrobot)<<": "<<x.fitness<<std::endl;
-		avaragefitness += x.fitness;
-		if(x.fitness > maxfitness){
-			maxfitness = x.fitness;
-			//take best robots genes
-			x.returnith(bestinputtohidden);
-			x.returnhto(besthiddentooutput);
+	for(std::vector<robot>::size_type i = 0; i != robots.size(); i++) {
+		std::cout<<robotchar(robots[i].nrobot)<<": "<<robots[i].fitness<<std::endl;
+		avaragefitness += robots[i].fitness;
+		if(robots[i].fitness > maxfitness){
+			maxfitness = robots[i].fitness;
+			bestrobot = i;
 		}
 	}
+
+	//take genes from best robot
+	robots[bestrobot].returnith(bestinputtohidden);
+	robots[bestrobot].returnhto(besthiddentooutput);
+
 	//give best genes to other robots
 	for(std::vector<robot>::size_type i = 0; i != robots.size(); i++) {
-		robots[i].newith(bestinputtohidden);
-		robots[i].newhto(besthiddentooutput);
+		//best robot keeps the same genes
+		if(i != bestrobot){
+			robots[i].newith(bestinputtohidden);
+			robots[i].newhto(besthiddentooutput);
+		}
 		robots[i].adjustlearningrate(adapt);
 	}
 	currentaveragefitness = avaragefitness / nrobots;
