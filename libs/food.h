@@ -5,6 +5,7 @@ class food{
 	public:
 		float x, y;
 		int nfood;
+		float width;
 
 	//functionS
 	public:

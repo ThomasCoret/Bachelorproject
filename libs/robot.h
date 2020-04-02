@@ -66,11 +66,8 @@ class robot{
 	private:
 		//run the neural network
 		void neuralnetwork();
-		//functions to calculate whether neuron is activated or not
-		float r(float);
-		float rprime(float);
-		float g(float);
-		float gprime(float);
+		//function to calculate whether neuron is activated or not
+		float activation(float);
 
 	public:
 		robot();

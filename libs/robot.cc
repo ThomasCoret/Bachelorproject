@@ -47,20 +47,8 @@ robot::robot(float _x, float _y, int _rotation, int _nrobot){
 	}
 }
 
-float robot::r(float x){
-	return x > 0 ? x : 0;
-}
-
-float robot::rprime(float x ){
-	return x > 0 ? 1 : 0;
-}
-
-float robot::g(float x){
+float robot::activation(float x){
 	return 1 / ( 1 + exp(-1*x) );
-}
-
-float robot::gprime(float x ){
-	return 1 * g(x) * ( 1 - g(x) );
 }
 
 //simulate the robot, 
@@ -95,7 +83,7 @@ void robot::neuralnetwork(){
 	}
 
 	for(int i = 1; i < hiddenlayers + 1; i++){
-		acthidden[i] = g(inhidden[i]);
+		acthidden[i] = activation(inhidden[i]);
 	}
 
 	for(int i = 0; i < outputs; i++){
@@ -105,8 +93,9 @@ void robot::neuralnetwork(){
 	}
 
 	for(int i =0;i<outputs;i++)
-		netoutput[i] = g(inoutput[i]);
-
+		netoutput[i] = activation(inoutput[i]);
+	//std::cout<<"--------------------------"<<std::endl;
+	//std::cout<<"before: speed: "<<speed<<", rotation: "<<rotation<<std::endl;
 	//update stats based on output
 	//netoutput decides where to turn [-turnspeed,turnspeed]
 	rotation += (netoutput[0] - 0.5) * turnspeed*2;
@@ -114,6 +103,12 @@ void robot::neuralnetwork(){
 	speed = netoutput[1] * maxspeed; 
 	//fix the rotation if it got too big or below 0
 	rotation = fixrotation(rotation);
+
+	//std::cout<<"after: speed: "<<speed<<", rotation: "<<rotation<<std::endl;
+
+	//std::cout<<"input1: "<<input[1]<<", input2: "<<input[2]<<", input3: "<<input[3]<<", input4: "<<input[4]<<", input5: "<<input[5]<<", input6: "<<input[6]<<std::endl;
+	//std::cout<<"inoutput1: "<<inoutput[0]<<", inoutput2: "<<inoutput[1]<<std::endl;
+	//std::cout<<"output1: "<<netoutput[0]<<", output2: "<<netoutput[1]<<std::endl;
 }
 
 void robot::returnith(float inputarray[MAX][MAX]){
@@ -136,14 +131,17 @@ void robot::newith(float inputarray[MAX][MAX]){
 	std::random_device dev;
     std::mt19937 rng(dev());
     std::uniform_int_distribution<std::mt19937::result_type> widthdist  (0,1000);
-
+    std::cout<<"before ith[1][1]"<<inputtohidden[1][1]<<", input: "<<inputarray[1][1]<<std::endl;
 	for (int i = 0; i < MAX; i++){
 		for (int j = 0; j < MAX; j++){
 			//add small variation to the recieved genes relative to the weight [-0.05% - 0.05%]
-			inputtohidden[i][j] = inputarray[i][j] + inputarray[i][j] * (((float)widthdist (rng))-500)/500 * learningrate;
-			//std::cout<<"variatie: "<<inputarray[i][j] * (((float)widthdist (rng))-500)/500 * learningrate<<std::endl;
+			//inputtohidden[i][j] = inputarray[i][j] + inputarray[i][j] * (((float)widthdist (rng))-500)/500 * learningrate;
+
+			//add small variation to the recieved genes not relative to the weight [-learningrate - learningrate]
+			inputtohidden[i][j] = inputarray[i][j] + (((float)widthdist (rng))-500)/500 * learningrate;
 		}
 	}
+	std::cout<<"after ith[1][1]"<<inputtohidden[1][1]<<std::endl;
 }
 
 void robot::newhto(float inputarray[MAX][MAX]){
@@ -154,7 +152,9 @@ void robot::newhto(float inputarray[MAX][MAX]){
 	for (int i = 0; i < MAX; i++){
 		for (int j = 0; j < MAX; j++){
 			//add small variation to the recieved genes relative to the weight [-0.05% - 0.05%]
-			hiddentooutput[i][j] = inputarray[i][j] + inputarray[i][j] * (((float)widthdist (rng))-500)/500 * learningrate;
+			//hiddentooutput[i][j] = inputarray[i][j] + inputarray[i][j] * (((float)widthdist (rng))-500)/500 * learningrate;
+			//add small variation to the recieved genes not relative to the weight [-learningrate - learningrate]
+			hiddentooutput[i][j] = inputarray[i][j] + (((float)widthdist (rng))-500)/500 * learningrate;
 		}
 	}
 }
@@ -183,42 +183,12 @@ float robot::fixrotation(float rotation){
 	return rotation;
 }
 
-void robot::qlearn(float ahead, float right, float left){
-	//calculate the error for each output
-	float error[outputs];
-	float delta[outputs];
-	float deltahidden[outputs][hiddenlayers];
-	//if food to the right of the robot he should turn right
-	error[0] = right ? 1 - netoutput[0] : 0;
-	//if food to the left of the robot he should turn left
-	error[1] = left ? 1 - netoutput[1] : 0;
-	//robot should always be moving since it is the most efficient
-	error[2] = netoutput[2] > 0.5 ? 0 : 1 - netoutput[2];
-	for(int i = 0; i<outputs; i++){
-		delta[i] = error[i] * gprime(inoutput[i]);
-		for(int j = 1; j<hiddenlayers+1; j++){
-			deltahidden[i][j] = gprime(inoutput[i]) * hiddentooutput[i][j] * delta[i];
-		}
-	}
-
-	//update the weights for each output delta
-	for(int i = 0; i < outputs; i++){
-		for(int j = 0; j < hiddenlayers+1; j++){
-			for(int k = 0; k < inputs; k++){
-				inputtohidden[k][j] += learningrate * input[j] * deltahidden[i][j];
-			}
-		}
-
-		for(int j = 0; j < hiddenlayers+1; j++){
-			hiddentooutput[i][j] += learningrate * acthidden[j] * delta[i];
-		}
-	}
-}
-
 void robot::adjustlearningrate(float adapt){
-	float totalshift = startlearningrate - endlearningrate;
-	learningrate -= adapt * totalshift;
-	std::cout<<"startlr: "<<startlearningrate<<", endlr: "<<endlearningrate<<", curlr: "<<learningrate<<std::endl;
+	//don't go below endlearningrate
+	if(learningrate>endlearningrate){
+		float totalshift = startlearningrate - endlearningrate;
+		learningrate -= adapt * totalshift;
+	}
 }
 
 void robot::savenodes(std::string filename){

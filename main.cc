@@ -1,16 +1,17 @@
 //#include "libs/food.h"
 //#include "libs/robot.h"
 
-#include "libs/interface.h"
-
+#include "libs/world.h"
+#include "GL/glut.h"
+#define _USE_MATH_DEFINES
 
 using namespace std;
 
-#define generations 200
-#define trainingiterations 500
+#define generations 10
+#define trainingiterations 200
+#define nworlds 50
 
-bool generational = true;
-world World(generational);
+world World;
 
 bool randomized = false;
 
@@ -54,6 +55,7 @@ GLfloat mat_emission[] = {0.3, 0.2, 0.2, 0.0};
 float g_posX = -20.0, g_posY = 30.0, g_posZ = World.width/2;
 float g_orientation = 90.0; // y axis
 
+void generationallearning2(bool, string);
 void generationallearning(bool, string);
 void init();
 void update();
@@ -71,7 +73,7 @@ int main(int argc, char *argv[]){
 }
 
 void newgen(){
-	World.updaterobots(1/generations);
+	World.updaterobots((float)1/generations);
 	World.randomizeworld();
 }
 
@@ -109,9 +111,10 @@ void save(){
 	string filename;
 	cout<<"How do u want to name the file?\n";
 	cin>>filename;
+	string finalname = "robotsaves/" + filename;
 	if(!(filename == "")){
-		World.savebestrobot(filename);
-		cout<<"saved in: robotsaves/"<<filename<<endl;
+		World.savebestrobot(finalname);
+		cout<<"saved in:"<<finalname<<endl;
 	}
 	else
 		cout<<"string is empty\n";
@@ -134,6 +137,7 @@ void experiment(){
 	bool savefile = false;
 	char yesorno;
 	string filename = "";
+	string finalname = "graphs/";
 	cout<<"save performance? (y/n)\n";
 	cin>>yesorno;
 	yesorno = toupper(yesorno);
@@ -141,8 +145,10 @@ void experiment(){
 		savefile = true;
 		cout<<"How do u want to name the file?\n";
 		cin>>filename;
+		finalname += filename;
+		cout<<"saving in :"<<finalname<<endl;
 	}
-	generationallearning(savefile, filename);
+	generationallearning2(savefile, finalname);
 }
 
 int menu(int argc, char *argv[]){
@@ -195,13 +201,14 @@ int menu(int argc, char *argv[]){
 	}
 }
 
+//train robots generationally in the same world
 void generationallearning(bool save, string filename){
 	int its = trainingiterations;
 	//always need to declarate outputfile
 	ofstream outputfile;
 	//output to file
 	if(save)
-		outputfile.open("graphs/randomrobot.txt");
+		outputfile.open(filename);
 	//test the trained robots
 	for(int i = 0; i < generations; i++){
 		while (!World.done()&& its > 0){
@@ -210,14 +217,84 @@ void generationallearning(bool save, string filename){
 			its--;
 		}
 		cout<<"generation: "<<i<<" food left: "<<World.nfood<<endl;
+		//update the robots at the end of the generation
+		World.updaterobots((float)1/generations);
+		//reset total iterations
 		its = trainingiterations;
+		//save to file
 		if(save)
 			outputfile<<i<<";"<<World.getaveragefitness()<<";"<<World.getmaxfitness()<<"\n";
+		//randomize
 		World.randomizeworld();
 	}
 	if(save)	
 		outputfile.close();
 	
+}
+
+//train robots seperately in their own world
+void generationallearning2(bool save, string filename){
+	vector<world> Worlds;
+
+	//always need to declarate outputfile
+	ofstream outputfile;
+	//output to file
+	if(save)
+		outputfile.open(filename);
+
+	for(int i = 0; i < nworlds; i++){
+		world Newworld;
+		Worlds.push_back(Newworld);
+	}
+	float inputith[MAX][MAX];
+	float inputhto[MAX][MAX];
+	for(int k = 0; k < generations; k++){
+		//big negative number
+		float maxfitness = -2000000;
+		float averagefitness = 0;
+		std::vector<world>::size_type bestworld = -1;
+		for(int j = 0; j < trainingiterations; j++){
+			for(std::vector<world>::size_type i = 0; i != Worlds.size(); i++) {
+				//only simulate if world is not done yet
+				if(!Worlds[i].done()){
+					Worlds[i].simulate();
+				}
+			}
+		}
+		for(std::vector<world>::size_type i = 0; i != Worlds.size(); i++) {
+			averagefitness += Worlds[i].getmaxfitness();
+			//save the world with the best robot
+			if(Worlds[i].getmaxfitness() > maxfitness){
+				maxfitness = Worlds[i].getmaxfitness();
+				bestworld = i;
+			}
+		}
+		//get the nodes from the best robot
+		Worlds[bestworld].getith(inputith);
+		Worlds[bestworld].gethto(inputhto);
+
+		//update the other worlds with the best robot's nodes then randomize them
+		for(std::vector<world>::size_type i = 0; i != Worlds.size(); i++) {
+			if(i != bestworld){
+				Worlds[i].newith(inputith);
+				Worlds[i].newhto(inputhto);
+				Worlds[i].robots[0].adjustlearningrate((float)1/generations);
+			}
+			Worlds[i].randomizeworld();
+		}
+
+		if(save)
+			outputfile<<k<<";"<<maxfitness<<";"<<averagefitness/nworlds<<"\n";
+
+		cout<<"generation "<<k<<" done. max fitness: "<<maxfitness<<", avg fitness: "<<averagefitness/nworlds<<std::endl;
+	}
+
+	if(save)	
+		outputfile.close();
+
+	//copy the best robot to our single world
+	World.newhto(inputhto);
+	World.newith(inputith);
 }
 
 /************************************************  Glut stuff  ************************************************/
@@ -247,6 +324,17 @@ void drawrobotsandfood(){
 		glScalef(1.0,1.0, 1.0);
 		glColor3f(0.6, 0.0,0.1);
 		drawOneParticle();
+		glPopMatrix();	
+		glPushMatrix();
+		glLineWidth(0.5);
+		float degree = robot.rotation -90;
+		glBegin(GL_LINES);
+		for(int i = 0; i<90; i++){
+			glVertex3f(0.0, robot.y, robot.x);
+			glVertex3f(0.0, robot.y +( 20 * sin(degree*M_PI/180)), robot.x + (20 * cos(degree*M_PI/180)));
+			degree += 2;
+		}
+		glEnd();
 		glPopMatrix();	
 	}
 	for(auto food : World.foods){

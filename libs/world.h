@@ -8,14 +8,9 @@
 #include "food.h"
 #include "robot.h"
 
-
-
 class world{
 	
 	//variables
-	private:
-		bool generational;
-
 	public:
 		int frames;
 		int width, height;
@@ -25,7 +20,7 @@ class world{
 		float currentmaxfitness;
 		float currentaveragefitness;
 
-	//functionS
+	//functions
 	private:
 		//check if there is food ahead of the given parameters
 		float foodahead(float, float, float, float, int);
@@ -35,11 +30,9 @@ class world{
 		float castray(float, float, float);
 		//distance to wall in the direction of the rotation
 		float distancetowall(float, float, float);
-
-	
 		
 	public:
-		world(bool);
+		world();
 		//reset randomize the world 
 		void randomizeworld();
 		//world is done when no food is left
@@ -62,5 +55,9 @@ class world{
 		float getaveragefitness();
 		//get the max fitness of the current robots
 		float getmaxfitness();
+		void getith(float[MAX][MAX]);
+		void gethto(float[MAX][MAX]);
+		void newith(float[MAX][MAX]);
+		void newhto(float[MAX][MAX]);
 };
 #endif

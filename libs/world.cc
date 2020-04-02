@@ -1,24 +1,19 @@
 #include "world.h"
 
-#define fitnessgainfood 50
+#define fitnessgainfood 100
 #define nrays 30
-#define raywidth 0.5
 #define raylength 20
 #define raystepsize 0.1
 #define ROT 360.0
 #define FOV 180
 #define NFOVDISTR 3
 
-world::world(bool _generational){
-	generational = _generational;
+world::world(){
 	frames = 0;
 	width = 50;
 	height = 50;
-	if(generational)
-		nrobots = 10;
-	else
-		nrobots = 1;
-	maxfood = 3;
+	nrobots = 1;
+	maxfood = 5;
 	nfood = maxfood;
 	//random number generating
 	std::random_device dev;
@@ -31,8 +26,11 @@ world::world(bool _generational){
 	currentaveragefitness = 0;
 
 	for(int i = 0; i < nrobots; i++){
-		float newx = ((float)widthdist (rng))/10;
-		float newy = ((float)heightdist(rng))/10;
+		//float newx = ((float)widthdist (rng))/10;
+		//float newy = ((float)heightdist(rng))/10;
+		//spawn robot in the middle of the map
+		float newx = width/2;
+		float newy = height/2;
 		float newrot = ((float)rotdist (rng))/10;
 		robot Newrobot(newx, newy, newrot, i);
 		robots.push_back(Newrobot);
@@ -50,22 +48,26 @@ void world::randomizeworld(){
 	//random number generating
 	std::random_device dev;
     std::mt19937 rng(dev());
-    std::uniform_int_distribution<std::mt19937::result_type> widthdist  (0,width*10); // distribution in range [0, width]
-	std::uniform_int_distribution<std::mt19937::result_type> heightdist (0,height*10); // distribution in range [0, height]
-	std::uniform_int_distribution<std::mt19937::result_type> rotdist    (0,ROT*10); // distribution in range [0, 7]
+    std::uniform_int_distribution<std::mt19937::result_type> widthdist  (0,width*10); // distribution in range [0, width*10]
+	std::uniform_int_distribution<std::mt19937::result_type> heightdist (0,height*10); // distribution in range [0, height*10]
+	std::uniform_int_distribution<std::mt19937::result_type> rotdist    (0,ROT*10); // distribution in range [0, ROT*10]
 	//remove the food
 	foods.clear();
 	//put new food back 
 	for(int i = 0; i < maxfood; i++){
 		float newx = ((float)widthdist (rng))/10;
 		float newy = ((float)heightdist(rng))/10;
+
 		food Newfood(newx, newy, i);
 		foods.push_back(Newfood);
 	}
 	//randomize the robots locations
 	for(std::vector<robot>::size_type i = 0; i != robots.size(); i++) {
-		float newx = ((float)widthdist (rng))/10;
-		float newy = ((float)heightdist(rng))/10;
+		//float newx = ((float)widthdist (rng))/10;
+		//float newy = ((float)heightdist(rng))/10;
+		//spawn robot in the middle of the map
+		float newx = width/2;
+		float newy = height/2;
 		float newrot = ((float)rotdist (rng))/10;
 		robots[i].rotation = newrot;
 		robots[i].x = newx;
@@ -92,11 +94,9 @@ void world::simulate(){
 		distance[2] = distancetowall(robots[i].x, robots[i].y, robots[i].rotation + 90.0);
 		//std::cout<<"x: "<<robots[i].x<<", y: "<<robots[i].y<<", rot: "<<robots[i].rotation<<", wall ahead distance: "<<distance[0]<<std::endl;
 		robots[i].simulate(collisions[0], collisions[1], collisions[2], distance[0], distance[1], distance[2]);
-		//reinforcement learning
-		if(!generational){
-			robots[i].qlearn(collisions[0], collisions[1], collisions[2]);
-		}
 		moverobot(i);
+		//every step we substract one from the fitness so the robots that collect all food fastest get favoured
+		robots[i].fitness -= 1;
 	}
 	frames++;
 }
@@ -134,8 +134,9 @@ float world::castray(float x, float y, float degree){
 		for(std::vector<food>::size_type j = 0; j < foods.size(); j++) {
 			float fx = foods[j].x;
 			float fy = foods[j].y;
+			float fw = foods[j].width;
 			//collision with food
-			if((fx > x - raywidth) && (fx < x + raywidth) && (fy > y - raywidth) && (fy < y + raywidth)){
+			if((fx + fw > x ) && (fx - fw < x) && (fy + fw > y) && (fy - fw< y)){
 				//return length to food
 				return (float)sqrt(pow(abs(originalx - fx),2) + pow(abs(originaly - fy),2)) / raylength;
 			}
@@ -153,6 +154,7 @@ void world::moverobot(std::vector<robot>::size_type i){
 	float roboty = robots[i].y;
 	robots[i].x += robots[i].speed * cos(robots[i].rotation*M_PI/180);
 	robots[i].y += robots[i].speed * sin(robots[i].rotation*M_PI/180);
+	//edge
 	if(robots[i].x > width)  robots[i].x = width;
 	if(robots[i].y > height) robots[i].y = height;
 	if(robots[i].x < 0)      robots[i].x = 0;
@@ -196,7 +198,7 @@ void world::updaterobots(float adapt){
 			bestrobot = i;
 		}
 	}
-
+	std::cout<<"best robot: "<<robotchar(robots[bestrobot].nrobot)<<", fitness: "<<robots[bestrobot].fitness<<std::endl;
 	//take genes from best robot
 	robots[bestrobot].returnith(bestinputtohidden);
 	robots[bestrobot].returnhto(besthiddentooutput);
@@ -225,7 +227,7 @@ void world::drawworld(){
 		}
 	}
 
-	/* 
+	/* //raycasting draw
 	for(int i = 0 ; i<60;i++){
 		float x = robots[0].x;
 		float y = robots[0].y;
@@ -268,13 +270,13 @@ char world::robotchar(int nrobot){
 }
 
 void world::savebestrobot(std::string filename){
-	int maxfitness = -1;
+	int maxfitness = -100000;
 	std::vector<robot>::size_type bestrobot;
 	//find the most succesfull robot
 	for(std::vector<robot>::size_type i = 0; i != robots.size(); i++) {
 		if(robots[i].fitness > maxfitness){
 			maxfitness = robots[i].fitness;
-			bestrobot = 1;
+			bestrobot = i;
 		}
 	}
 	robots[bestrobot].savenodes(filename);
@@ -332,10 +334,28 @@ float world::getaveragefitness(){
 }
 
 float world::getmaxfitness(){
-	float max = -1;
+	float max = -100000;
 	for(auto x : robots){
 		if(x.fitness > max)
 			max = x.fitness;
 	}
 	return max;
+}
+
+//the functions below are used in a situation with only 1 robot so 0 is hardcoded
+void world::getith(float input[MAX][MAX]){
+	robots[0].returnith(input);
+	
+}
+
+void world::gethto(float input[MAX][MAX]){
+	robots[0].returnhto(input);
+}
+
+void world::newith(float input[MAX][MAX]){
+	robots[0].newith(input);
+}
+
+void world::newhto(float input[MAX][MAX]){
+	robots[0].newhto(input);
 }
