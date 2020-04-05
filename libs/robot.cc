@@ -52,7 +52,7 @@ float robot::activation(float x){
 }
 
 //simulate the robot, 
-void robot::simulate(float foodahead, float foodtotheright, float foodtotheleft, float distahead,float distleft,float distright){
+void robot::simulate(float foodtotheleft, float foodahead, float foodtotheright, float distahead,float distleft,float distright){
 	//setup the inputs for the neural network
 	//first input for the robot is the intensity of food in the 0-60 degrees of the robots fov
 	input[1] = foodtotheleft;
@@ -88,24 +88,26 @@ void robot::neuralnetwork(){
 
 	for(int i = 0; i < outputs; i++){
 		for(int j = 0; j < hiddenlayers + 1; j++){
-			inoutput[i] += acthidden[i] * hiddentooutput[i][j];
+			inoutput[i] += acthidden[j] * hiddentooutput[i][j];
 		}
 	}
 
-	for(int i =0;i<outputs;i++)
+	for(int i =0;i<outputs;i++){
 		netoutput[i] = activation(inoutput[i]);
+	}
+
 	//std::cout<<"--------------------------"<<std::endl;
 	//std::cout<<"before: speed: "<<speed<<", rotation: "<<rotation<<std::endl;
 	//update stats based on output
 	//netoutput decides where to turn [-turnspeed,turnspeed]
 	rotation += (netoutput[0] - 0.5) * turnspeed*2;
+	std::cout<<netoutput[0]<<"  "<<(netoutput[0] - 0.5) * turnspeed*2<<std::endl;
 	//netoutput 1 decides the speed [0, maxspeed]
 	speed = netoutput[1] * maxspeed; 
 	//fix the rotation if it got too big or below 0
 	rotation = fixrotation(rotation);
 
 	//std::cout<<"after: speed: "<<speed<<", rotation: "<<rotation<<std::endl;
-
 	//std::cout<<"input1: "<<input[1]<<", input2: "<<input[2]<<", input3: "<<input[3]<<", input4: "<<input[4]<<", input5: "<<input[5]<<", input6: "<<input[6]<<std::endl;
 	//std::cout<<"inoutput1: "<<inoutput[0]<<", inoutput2: "<<inoutput[1]<<std::endl;
 	//std::cout<<"output1: "<<netoutput[0]<<", output2: "<<netoutput[1]<<std::endl;
@@ -131,17 +133,17 @@ void robot::newith(float inputarray[MAX][MAX]){
 	std::random_device dev;
     std::mt19937 rng(dev());
     std::uniform_int_distribution<std::mt19937::result_type> widthdist  (0,1000);
-    std::cout<<"before ith[1][1]"<<inputtohidden[1][1]<<", input: "<<inputarray[1][1]<<std::endl;
+    //std::cout<<"before ith[1][1]"<<inputtohidden[1][1]<<", input: "<<inputarray[1][1]<<std::endl;
 	for (int i = 0; i < MAX; i++){
 		for (int j = 0; j < MAX; j++){
 			//add small variation to the recieved genes relative to the weight [-0.05% - 0.05%]
-			//inputtohidden[i][j] = inputarray[i][j] + inputarray[i][j] * (((float)widthdist (rng))-500)/500 * learningrate;
+			inputtohidden[i][j] = inputarray[i][j] + inputarray[i][j] * (((float)widthdist (rng))-500)/500 * learningrate;
 
 			//add small variation to the recieved genes not relative to the weight [-learningrate - learningrate]
-			inputtohidden[i][j] = inputarray[i][j] + (((float)widthdist (rng))-500)/500 * learningrate;
+			//inputtohidden[i][j] = inputarray[i][j] + (((float)widthdist (rng))-500)/500 * learningrate;
 		}
 	}
-	std::cout<<"after ith[1][1]"<<inputtohidden[1][1]<<std::endl;
+	//std::cout<<"after ith[1][1]"<<inputtohidden[1][1]<<std::endl;
 }
 
 void robot::newhto(float inputarray[MAX][MAX]){
@@ -152,9 +154,9 @@ void robot::newhto(float inputarray[MAX][MAX]){
 	for (int i = 0; i < MAX; i++){
 		for (int j = 0; j < MAX; j++){
 			//add small variation to the recieved genes relative to the weight [-0.05% - 0.05%]
-			//hiddentooutput[i][j] = inputarray[i][j] + inputarray[i][j] * (((float)widthdist (rng))-500)/500 * learningrate;
+			hiddentooutput[i][j] = inputarray[i][j] + inputarray[i][j] * (((float)widthdist (rng))-500)/500 * learningrate;
 			//add small variation to the recieved genes not relative to the weight [-learningrate - learningrate]
-			hiddentooutput[i][j] = inputarray[i][j] + (((float)widthdist (rng))-500)/500 * learningrate;
+			//hiddentooutput[i][j] = inputarray[i][j] + (((float)widthdist (rng))-500)/500 * learningrate;
 		}
 	}
 }
@@ -177,9 +179,9 @@ void robot::copyhto(float inputarray[MAX][MAX]){
 
 float robot::fixrotation(float rotation){
 	if(rotation < 0)
-		return 360 + rotation;
+		return 360.0 + rotation;
 	if(rotation > 360)
-		return rotation-360;
+		return rotation-360.0;
 	return rotation;
 }
 

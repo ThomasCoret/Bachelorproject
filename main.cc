@@ -1,15 +1,14 @@
 //#include "libs/food.h"
 //#include "libs/robot.h"
 
-#include "libs/world.h"
+#include "libs/worldmanager.h"
 #include "GL/glut.h"
 #define _USE_MATH_DEFINES
 
 using namespace std;
 
-#define generations 10
+#define generations 150
 #define trainingiterations 200
-#define nworlds 50
 
 world World;
 
@@ -58,6 +57,7 @@ float g_orientation = 90.0; // y axis
 void generationallearning2(bool, string);
 void generationallearning(bool, string);
 void init();
+void keyboard(unsigned char, int, int);
 void update();
 void drawrobots();
 void timer(int);
@@ -102,7 +102,7 @@ void drawinglut(int argc, char *argv[]){
 	gluPerspective(120.0, 1.0, 1.0, 1000.0);
 	glEnable(GL_DEPTH_TEST);
 	glutDisplayFunc(&update);
-	//glutKeyboardFunc(&keyboard);
+	glutKeyboardFunc(&keyboard);
 	glutTimerFunc(50, &timer, 0);
 	glutMainLoop();
 }
@@ -234,7 +234,9 @@ void generationallearning(bool save, string filename){
 
 //train robots seperately in their own world
 void generationallearning2(bool save, string filename){
-	vector<world> Worlds;
+	//amount of parallell worlds training robots
+	int nworlds = 20;
+	worldmanager WM(nworlds, generations);
 
 	//always need to declarate outputfile
 	ofstream outputfile;
@@ -242,57 +244,30 @@ void generationallearning2(bool save, string filename){
 	if(save)
 		outputfile.open(filename);
 
-	for(int i = 0; i < nworlds; i++){
-		world Newworld;
-		Worlds.push_back(Newworld);
-	}
-	float inputith[MAX][MAX];
-	float inputhto[MAX][MAX];
+	
 	for(int k = 0; k < generations; k++){
-		//big negative number
-		float maxfitness = -2000000;
-		float averagefitness = 0;
-		std::vector<world>::size_type bestworld = -1;
-		for(int j = 0; j < trainingiterations; j++){
-			for(std::vector<world>::size_type i = 0; i != Worlds.size(); i++) {
-				//only simulate if world is not done yet
-				if(!Worlds[i].done()){
-					Worlds[i].simulate();
-				}
-			}
-		}
-		for(std::vector<world>::size_type i = 0; i != Worlds.size(); i++) {
-			averagefitness += Worlds[i].getmaxfitness();
-			//save the world with the best robot
-			if(Worlds[i].getmaxfitness() > maxfitness){
-				maxfitness = Worlds[i].getmaxfitness();
-				bestworld = i;
-			}
-		}
-		//get the nodes from the best robot
-		Worlds[bestworld].getith(inputith);
-		Worlds[bestworld].gethto(inputhto);
+		WM.resetfitness();
 
-		//update the other worlds with the best robot's nodes then randomize them
-		for(std::vector<world>::size_type i = 0; i != Worlds.size(); i++) {
-			if(i != bestworld){
-				Worlds[i].newith(inputith);
-				Worlds[i].newhto(inputhto);
-				Worlds[i].robots[0].adjustlearningrate((float)1/generations);
-			}
-			Worlds[i].randomizeworld();
+		for(int j = 0; j < trainingiterations; j++){
+			WM.simulate();
 		}
+
+		WM.update();
 
 		if(save)
-			outputfile<<k<<";"<<maxfitness<<";"<<averagefitness/nworlds<<"\n";
+			outputfile<<k<<";"<<WM.maxfitness<<";"<<WM.averagefitness/nworlds<<"\n";
 
-		cout<<"generation "<<k<<" done. max fitness: "<<maxfitness<<", avg fitness: "<<averagefitness/nworlds<<std::endl;
+		cout<<"generation "<<k<<" done. max fitness: "<<WM.maxfitness<<", avg fitness: "<<WM.averagefitness/nworlds<<std::endl;
 	}
 
 	if(save)	
 		outputfile.close();
 
-	//copy the best robot to our single world
+	float inputith[MAX][MAX];
+	float inputhto[MAX][MAX];
+	//copy the best robot to our single world to view it in glut or save it
+	WM.gethto(inputhto);
+	WM.getith(inputith);
 	World.newhto(inputhto);
 	World.newith(inputith);
 }
@@ -307,6 +282,8 @@ void timer(int value){
 		randomized = true;
 	}
 	World.simulate();
+	//string faka;
+	//cin>>faka;
 	it++;
 	glutPostRedisplay();
 	glutTimerFunc(20, &timer, 0);
@@ -314,7 +291,7 @@ void timer(int value){
 
 void drawOneParticle()
 {
-	glutSolidSphere(1.0, 10, 10);
+	glutSolidSphere(2.0, 10, 10);
 }
 
 void drawrobotsandfood(){
@@ -330,6 +307,11 @@ void drawrobotsandfood(){
 		float degree = robot.rotation -90;
 		glBegin(GL_LINES);
 		for(int i = 0; i<90; i++){
+			glColor3f(0.6, 0.5,0.1);
+			if(i>30)
+				glColor3f(0.6, 0.0,0.1);
+			if(i>60)
+				glColor3f(0.6, 0.0,0.6);
 			glVertex3f(0.0, robot.y, robot.x);
 			glVertex3f(0.0, robot.y +( 20 * sin(degree*M_PI/180)), robot.x + (20 * cos(degree*M_PI/180)));
 			degree += 2;
@@ -380,6 +362,15 @@ void setmaterials( ){
 	}
 
 	glPopMatrix();
+}
+
+void keyboard(unsigned char key, int x, int y)
+{
+	switch (key) {
+		case 'r': // randomize the world
+			World.randomizeworld();
+		    break;
+	}
 }
 
 void update(){

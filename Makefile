@@ -5,12 +5,14 @@ OBJECTS = \
 	libs/robot.o \
 	libs/food.o \
 	libs/world.o \
+	libs/worldmanager.o \
 	main.o
 
 HEADERS = \
 	libs/food.h \
 	libs/robot.h \
-	libs/world.h
+	libs/world.h \
+	libs/worldmanager.h
 
 	
 all:    	main

@@ -19,13 +19,14 @@ class world{
 		std::vector<food> foods;
 		float currentmaxfitness;
 		float currentaveragefitness;
+		float maxdistance;
 
 	//functions
 	private:
 		//check if there is food ahead of the given parameters
 		float foodahead(float, float, float, float, int);
 		//return a char based on a robots rotation (for drawworld)
-		char robotchar(int rotation);
+		char robotchar(int);
 		//cast a ray in the direction of the rotation from the passed location
 		float castray(float, float, float);
 		//distance to wall in the direction of the rotation

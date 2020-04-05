@@ -5,15 +5,17 @@
 #define raylength 20
 #define raystepsize 0.1
 #define ROT 360.0
-#define FOV 180
+#define FOV 180.0
 #define NFOVDISTR 3
 
 world::world(){
 	frames = 0;
 	width = 50;
 	height = 50;
+	//root of width squared + height squared
+	maxdistance = (float)sqrt(pow(width,2) + pow(height,2));
 	nrobots = 1;
-	maxfood = 5;
+	maxfood = 10;
 	nfood = maxfood;
 	//random number generating
 	std::random_device dev;
@@ -26,11 +28,12 @@ world::world(){
 	currentaveragefitness = 0;
 
 	for(int i = 0; i < nrobots; i++){
-		//float newx = ((float)widthdist (rng))/10;
-		//float newy = ((float)heightdist(rng))/10;
+		//spawn robot in a random location
+		float newx = ((float)widthdist (rng))/10;
+		float newy = ((float)heightdist(rng))/10;
 		//spawn robot in the middle of the map
-		float newx = width/2;
-		float newy = height/2;
+		//float newx = width/2;
+		//float newy = height/2;
 		float newrot = ((float)rotdist (rng))/10;
 		robot Newrobot(newx, newy, newrot, i);
 		robots.push_back(Newrobot);
@@ -63,11 +66,12 @@ void world::randomizeworld(){
 	}
 	//randomize the robots locations
 	for(std::vector<robot>::size_type i = 0; i != robots.size(); i++) {
-		//float newx = ((float)widthdist (rng))/10;
-		//float newy = ((float)heightdist(rng))/10;
+		//spawn robot in a random location
+		float newx = ((float)widthdist (rng))/10;
+		float newy = ((float)heightdist(rng))/10;
 		//spawn robot in the middle of the map
-		float newx = width/2;
-		float newy = height/2;
+		//float newx = width/2;
+		//float newy = height/2;
 		float newrot = ((float)rotdist (rng))/10;
 		robots[i].rotation = newrot;
 		robots[i].x = newx;
@@ -89,10 +93,10 @@ void world::simulate(){
 			collisions[j] = foodahead(robots[i].x, robots[i].y, robots[i].radius, robots[i].rotation, j);
 		}
 		float distance[3];
-		distance[0] = distancetowall(robots[i].x, robots[i].y, robots[i].rotation);
-		distance[1] = distancetowall(robots[i].x, robots[i].y, robots[i].rotation - 90.0);
-		distance[2] = distancetowall(robots[i].x, robots[i].y, robots[i].rotation + 90.0);
-		//std::cout<<"x: "<<robots[i].x<<", y: "<<robots[i].y<<", rot: "<<robots[i].rotation<<", wall ahead distance: "<<distance[0]<<std::endl;
+		//reverse and normalize the distance to the wall so 0 is far away from the wall and 1 is close to the wall
+		distance[0] = (maxdistance - distancetowall(robots[i].x, robots[i].y, robots[i].rotation) ) / maxdistance;
+		distance[1] = (maxdistance - distancetowall(robots[i].x, robots[i].y, robots[i].rotation - 90.0) ) / maxdistance;
+		distance[2] = (maxdistance - distancetowall(robots[i].x, robots[i].y, robots[i].rotation + 90.0) ) / maxdistance;
 		robots[i].simulate(collisions[0], collisions[1], collisions[2], distance[0], distance[1], distance[2]);
 		moverobot(i);
 		//every step we substract one from the fitness so the robots that collect all food fastest get favoured
@@ -105,7 +109,8 @@ void world::simulate(){
 float world::distancetowall(float x, float y, float degree){
 	float originalx = x;
 	float originaly = y;
-	while(x > 0 && x<width && y > 0 && y <height){
+	//robots can be exactly on the edge so extend the edges 
+	while(x > -0.1 && x < width+0.1 && y > -0.1 && y < height + 0.1){
 		x += raystepsize * cos(degree*M_PI/180);
 		y += raystepsize * sin(degree*M_PI/180);
 	}
@@ -114,20 +119,25 @@ float world::distancetowall(float x, float y, float degree){
 	if(y > height) y = height;
 	if(x < 0)      x = 0;
 	if(y < 0)	   y = 0;
-	return (float)sqrt(pow(abs(originalx - x),2) + pow(abs(originaly - y),2));
+	float distance = (float)sqrt(pow(abs(originalx - x),2) + pow(abs(originaly - y),2));
+	return distance;
 }
 
 float world::foodahead(float x, float y, float radius, float rotation, int n){
 	float intensity = 0;
-	rotation -= FOV/2 + FOV/NFOVDISTR * n;
+	rotation -= (FOV/2) - (FOV/NFOVDISTR * n);
 	for(int i = 0; i<nrays; i++){
+		// FOV/NFOVDISTR = amount of degrees for the current section the robot is scanning divided by rays give the amount of degrees seperating the rays
 		float ray = castray(x,y,rotation+i*(FOV/NFOVDISTR/nrays));
-		intensity += (float)1.0/nrays * ray;
+		//add the intensity of this ray divided by the total number of rays (if all rays hit intensity will be 1 (not taking in account the distance of the food))
+		intensity += (float)ray/nrays;
 	}
 	return intensity;
 }
 
 float world::castray(float x, float y, float degree){
+	
+	degree = robots[0].fixrotation(degree);
 	float originalx = x;
 	float originaly = y;
 	for(float i = 0; i < raylength; i += raystepsize){
@@ -137,8 +147,10 @@ float world::castray(float x, float y, float degree){
 			float fw = foods[j].width;
 			//collision with food
 			if((fx + fw > x ) && (fx - fw < x) && (fy + fw > y) && (fy - fw< y)){
-				//return length to food
-				return (float)sqrt(pow(abs(originalx - fx),2) + pow(abs(originaly - fy),2)) / raylength;
+				//don return length just that it has seen food
+				return 1.0;
+				//return length to food+
+				//return (float)sqrt(pow(abs(originalx - fx),2) + pow(abs(originaly - fy),2)) / raylength;
 			}
 		}
 		x += raystepsize * cos(degree*M_PI/180);
@@ -184,7 +196,7 @@ void world::checkfoodcollision(std::vector<robot>::size_type i){
 }
 
 void world::updaterobots(float adapt){
-	int maxfitness = -1;
+	int maxfitness = -9000000;
 	std::vector<robot>::size_type bestrobot = -1;
 	float bestinputtohidden[MAX][MAX];
 	float besthiddentooutput[MAX][MAX];
