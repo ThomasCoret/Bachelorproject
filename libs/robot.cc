@@ -108,7 +108,7 @@ void robot::neuralnetwork(){
 	rotation = fixrotation(rotation);
 
 	//std::cout<<"after: speed: "<<speed<<", rotation: "<<rotation<<std::endl;
-	//std::cout<<"input1: "<<input[1]<<", input2: "<<input[2]<<", input3: "<<input[3]<<", input4: "<<input[4]<<", input5: "<<input[5]<<", input6: "<<input[6]<<std::endl;
+	//std::cout<<"input1: "<<input[1]<<", input2: "<<input[2]<<", input3: "<<input[3]<<", wallahead: "<<input[4]<<", wallleft: "<<input[5]<<", wallright: "<<input[6]<<std::endl;
 	//std::cout<<"inoutput1: "<<inoutput[0]<<", inoutput2: "<<inoutput[1]<<std::endl;
 	//std::cout<<"output1: "<<netoutput[0]<<", output2: "<<netoutput[1]<<std::endl;
 }

@@ -93,10 +93,10 @@ void world::simulate(){
 			collisions[j] = foodahead(robots[i].x, robots[i].y, robots[i].radius, robots[i].rotation, j);
 		}
 		float distance[3];
-		//reverse and normalize the distance to the wall so 0 is far away from the wall and 1 is close to the wall
-		distance[0] = (maxdistance - distancetowall(robots[i].x, robots[i].y, robots[i].rotation) ) / maxdistance;
-		distance[1] = (maxdistance - distancetowall(robots[i].x, robots[i].y, robots[i].rotation - 90.0) ) / maxdistance;
-		distance[2] = (maxdistance - distancetowall(robots[i].x, robots[i].y, robots[i].rotation + 90.0) ) / maxdistance;
+		//normalize distance to wall to the ray length and reverse it (1 is close to wall 0 is raylength away)
+		distance[0] = (raylength - distancetowall(robots[i].x, robots[i].y, robots[i].rotation)) / raylength;
+		distance[1] = (raylength - distancetowall(robots[i].x, robots[i].y, robots[i].rotation - 90.0)) / raylength;
+		distance[2] = (raylength - distancetowall(robots[i].x, robots[i].y, robots[i].rotation + 90.0)) / raylength;
 		robots[i].simulate(collisions[0], collisions[1], collisions[2], distance[0], distance[1], distance[2]);
 		moverobot(i);
 		//every step we substract one from the fitness so the robots that collect all food fastest get favoured
@@ -109,10 +109,12 @@ void world::simulate(){
 float world::distancetowall(float x, float y, float degree){
 	float originalx = x;
 	float originaly = y;
-	//robots can be exactly on the edge so extend the edges 
-	while(x > -0.1 && x < width+0.1 && y > -0.1 && y < height + 0.1){
-		x += raystepsize * cos(degree*M_PI/180);
-		y += raystepsize * sin(degree*M_PI/180);
+	for(float i = 0; i < raylength; i += raystepsize){
+		//robots can be exactly on the edge so extend the edges 
+		if(x > -0.1 && x < width+0.1 && y > -0.1 && y < height + 0.1){
+			x += raystepsize * cos(degree*M_PI/180);
+			y += raystepsize * sin(degree*M_PI/180);
+		}
 	}
 	//make the calculation be exactly on the wall for precision.
 	if(x > width)  x = width;
