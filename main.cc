@@ -171,7 +171,7 @@ int menu(int argc, char *argv[]){
 				break;
 			//glut
 			case 'G':
-				std::cout<<"glut\n";
+				std::cout<<"glut\n Press r to reset and randomize the food.\n";
 				drawinglut(argc, argv);
 				break;
 			//new generation

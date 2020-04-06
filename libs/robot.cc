@@ -36,9 +36,9 @@ robot::robot(float _x, float _y, int _rotation, int _nrobot){
 
 	for (int i = 0; i < MAX; i++){
 		for (int j = 0; j < MAX; j++){
-			//initiate hiddenlayers with random values [-1:1]
-			inputtohidden[i][j] = (((float)widthdist (rng))-500)/500;
-			hiddentooutput[i][j] = (((float)widthdist (rng))-500)/500;
+			//initiate hiddenlayers with random values [-4:4]
+			inputtohidden[i][j] = (((float)widthdist (rng))-500)/500 * 4;
+			hiddentooutput[i][j] = (((float)widthdist (rng))-500)/500 * 4;
 		}
 	}
 
@@ -101,7 +101,7 @@ void robot::neuralnetwork(){
 	//update stats based on output
 	//netoutput decides where to turn [-turnspeed,turnspeed]
 	rotation += (netoutput[0] - 0.5) * turnspeed*2;
-	std::cout<<netoutput[0]<<"  "<<(netoutput[0] - 0.5) * turnspeed*2<<std::endl;
+	//std::cout<<netoutput[0]<<"  "<<(netoutput[0] - 0.5) * turnspeed*2<<std::endl;
 	//netoutput 1 decides the speed [0, maxspeed]
 	speed = netoutput[1] * maxspeed; 
 	//fix the rotation if it got too big or below 0
