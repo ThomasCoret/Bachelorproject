@@ -7,8 +7,8 @@
 
 using namespace std;
 
-#define generations 150
-#define trainingiterations 200
+#define generations 200
+#define trainingiterations 500
 
 world World;
 
@@ -74,7 +74,7 @@ int main(int argc, char *argv[]){
 
 void newgen(){
 	World.updaterobots((float)1/generations);
-	World.randomizeworld();
+	World.randomizeworld(0);
 }
 
 void rungen(){
@@ -225,7 +225,7 @@ void generationallearning(bool save, string filename){
 		if(save)
 			outputfile<<i<<";"<<World.getaveragefitness()<<";"<<World.getmaxfitness()<<"\n";
 		//randomize
-		World.randomizeworld();
+		World.randomizeworld(0);
 	}
 	if(save)	
 		outputfile.close();
@@ -278,7 +278,7 @@ void timer(int value){
 	if(World.done())
 		randomized = false;
 	if(!randomized){
-		World.randomizeworld();
+		World.randomizeworld(0);
 		randomized = true;
 	}
 	World.simulate();
@@ -368,7 +368,7 @@ void keyboard(unsigned char key, int x, int y)
 {
 	switch (key) {
 		case 'r': // randomize the world
-			World.randomizeworld();
+			World.randomizeworld(0);
 		    break;
 	}
 }

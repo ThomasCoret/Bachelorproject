@@ -15,15 +15,17 @@ world::world(){
 	//root of width squared + height squared
 	maxdistance = (float)sqrt(pow(width,2) + pow(height,2));
 	nrobots = 1;
-	maxfood = 10;
-	nfood = maxfood;
+	maxfood = 5;
+	
 	//random number generating
 	std::random_device dev;
     std::mt19937 rng(dev());
     std::uniform_int_distribution<std::mt19937::result_type> widthdist  (0,width*10); // distribution in range [0, width]
 	std::uniform_int_distribution<std::mt19937::result_type> heightdist (0,height*10); // distribution in range [0, height]
-	std::uniform_int_distribution<std::mt19937::result_type> rotdist (0,ROT*10); // distribution in range [0, ]
+	std::uniform_int_distribution<std::mt19937::result_type> rotdist (0,ROT*10); // distribution in range [0, rot]
+	
 
+	nfood = maxfood;
 	currentmaxfitness = 0;
 	currentaveragefitness = 0;
 
@@ -46,7 +48,7 @@ world::world(){
 	}
 }
 
-void world::randomizeworld(){
+void world::randomizeworld(int randfood){
 	frames = 0;
 	//random number generating
 	std::random_device dev;
@@ -56,8 +58,14 @@ void world::randomizeworld(){
 	std::uniform_int_distribution<std::mt19937::result_type> rotdist    (0,ROT*10); // distribution in range [0, ROT*10]
 	//remove the food
 	foods.clear();
+	//for experimenting with random amounds of food
+	if(randfood > 0)
+		nfood = randfood;
+	else
+		nfood = maxfood;
+
 	//put new food back 
-	for(int i = 0; i < maxfood; i++){
+	for(int i = 0; i < nfood; i++){
 		float newx = ((float)widthdist (rng))/10;
 		float newy = ((float)heightdist(rng))/10;
 
@@ -78,7 +86,8 @@ void world::randomizeworld(){
 		robots[i].y = newy;
 		robots[i].fitness = 0;
 	}
-	nfood = maxfood;
+	//disabled for random food
+	
 }
 
 bool world::done(){
