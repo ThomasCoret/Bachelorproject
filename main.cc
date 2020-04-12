@@ -7,7 +7,7 @@
 
 using namespace std;
 
-#define generations 200
+#define generations 150
 #define trainingiterations 500
 
 world World;

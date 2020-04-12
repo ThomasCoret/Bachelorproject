@@ -20,6 +20,7 @@ class world{
 		float currentmaxfitness;
 		float currentaveragefitness;
 		float maxdistance;
+		bool worlddone;
 
 	//functions
 	private:

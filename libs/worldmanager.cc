@@ -51,7 +51,7 @@ void worldmanager::update(){
 			Worlds[i].newhto(inputhto);
 			Worlds[i].robots[0].adjustlearningrate((float)1/generations);
 		}
-		Worlds[i].randomizeworld(newrandfood);
+		Worlds[i].randomizeworld(0);
 	}
 }
 
