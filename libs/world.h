@@ -20,6 +20,7 @@ class world{
 		float currentmaxfitness;
 		float currentaveragefitness;
 		float maxdistance;
+		bool worlddone;
 
 	//functions
 	private:
@@ -35,7 +36,7 @@ class world{
 	public:
 		world();
 		//reset randomize the world 
-		void randomizeworld();
+		void randomizeworld(int);
 		//world is done when no food is left
 		bool done();
 		//simulate all the robots behiour

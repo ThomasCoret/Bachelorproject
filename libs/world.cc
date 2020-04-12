@@ -15,15 +15,17 @@ world::world(){
 	//root of width squared + height squared
 	maxdistance = (float)sqrt(pow(width,2) + pow(height,2));
 	nrobots = 1;
-	maxfood = 10;
-	nfood = maxfood;
+	maxfood = 3;
+	worlddone = false;
 	//random number generating
 	std::random_device dev;
     std::mt19937 rng(dev());
     std::uniform_int_distribution<std::mt19937::result_type> widthdist  (0,width*10); // distribution in range [0, width]
 	std::uniform_int_distribution<std::mt19937::result_type> heightdist (0,height*10); // distribution in range [0, height]
-	std::uniform_int_distribution<std::mt19937::result_type> rotdist (0,ROT*10); // distribution in range [0, ]
+	std::uniform_int_distribution<std::mt19937::result_type> rotdist (0,ROT*10); // distribution in range [0, rot]
+	
 
+	nfood = maxfood;
 	currentmaxfitness = 0;
 	currentaveragefitness = 0;
 
@@ -46,8 +48,9 @@ world::world(){
 	}
 }
 
-void world::randomizeworld(){
+void world::randomizeworld(int randfood){
 	frames = 0;
+	worlddone = false;
 	//random number generating
 	std::random_device dev;
     std::mt19937 rng(dev());
@@ -56,8 +59,14 @@ void world::randomizeworld(){
 	std::uniform_int_distribution<std::mt19937::result_type> rotdist    (0,ROT*10); // distribution in range [0, ROT*10]
 	//remove the food
 	foods.clear();
+	//for experimenting with random amounds of food
+	if(randfood > 0)
+		nfood = randfood;
+	else
+		nfood = maxfood;
+
 	//put new food back 
-	for(int i = 0; i < maxfood; i++){
+	for(int i = 0; i < nfood; i++){
 		float newx = ((float)widthdist (rng))/10;
 		float newy = ((float)heightdist(rng))/10;
 
@@ -78,16 +87,18 @@ void world::randomizeworld(){
 		robots[i].y = newy;
 		robots[i].fitness = 0;
 	}
-	nfood = maxfood;
+	//disabled for random food
+	
 }
 
 bool world::done(){
-	return (nfood<1);
+	return worlddone;
 }
 
 void world::simulate(){
 	for(std::vector<robot>::size_type i = 0; i < robots.size(); i++) {
 		checkfoodcollision(i);
+		
 		float collisions[NFOVDISTR];
 		for(int j =0 ; j<NFOVDISTR; j++){
 			collisions[j] = foodahead(robots[i].x, robots[i].y, robots[i].radius, robots[i].rotation, j);
@@ -101,6 +112,14 @@ void world::simulate(){
 		moverobot(i);
 		//every step we substract one from the fitness so the robots that collect all food fastest get favoured
 		robots[i].fitness -= 1;
+	}
+	//check if world is done
+	if(nfood < 1 && !worlddone){
+		//give all robots a bonus for collecting all food (for simplicity equal to collecting an extra food)
+		for(std::vector<robot>::size_type i = 0; i < robots.size(); i++) {
+			robots[i].fitness += fitnessgainfood;
+		}
+		worlddone = true;
 	}
 	frames++;
 }
@@ -233,7 +252,7 @@ void world::updaterobots(float adapt){
 void world::drawworld(){
 	char worlddraw[width+1][height+1];
 
-		for(int i = 0; i < width + 1; i++){
+	for(int i = 0; i < width + 1; i++){
 		for(int j = 0; j < height + 1; j++){
 			worlddraw[i][j]= ' ';
 			if(i == 0 || i == width || j == 0 || j == height )
