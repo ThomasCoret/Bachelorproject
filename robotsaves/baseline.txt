@@ -1,0 +1,15 @@
+Baseline:
+Weights -4 - 4 (can exceed after training)
+9 inputs
+3 food
+20 worlds
+150 gen
+500 it
+turnspeed 45
+maxspeed = 0.5
+startlearning = 0.2
+endlearning = 0.1
+weight mutate is not relative 
+width = height = 50
+foodwidth = 2.0
+robotwidth = 2.0 (not used)

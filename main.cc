@@ -295,26 +295,30 @@ void drawOneParticle()
 }
 
 void drawrobotsandfood(){
+	float nrays = 30;
 	for(auto robot : World.robots){
+		//draw robot
 		glPushMatrix();
 		glTranslatef(0.0, robot.y, robot.x);
 		glScalef(1.0,1.0, 1.0);
 		glColor3f(0.6, 0.0,0.1);
 		drawOneParticle();
 		glPopMatrix();	
+		//draw field of view
 		glPushMatrix();
 		glLineWidth(0.5);
 		float degree = robot.rotation -90;
 		glBegin(GL_LINES);
-		for(int i = 0; i<90; i++){
-			glColor3f(0.6, 0.5,0.1);
-			if(i>30)
+		for(int i = 0; i<nrays; i++){
+			if(i<=nrays/3)
+				glColor3f(0.6, 0.5,0.1);
+			if(i>nrays/3 && i<= nrays*2/3) 
 				glColor3f(0.6, 0.0,0.1);
-			if(i>60)
+			if(i>nrays*2/3)
 				glColor3f(0.6, 0.0,0.6);
 			glVertex3f(0.0, robot.y, robot.x);
 			glVertex3f(0.0, robot.y +( 20 * sin(degree*M_PI/180)), robot.x + (20 * cos(degree*M_PI/180)));
-			degree += 2;
+			degree += 180/nrays;
 		}
 		glEnd();
 		glPopMatrix();	

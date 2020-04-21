@@ -21,16 +21,16 @@ void worldmanager::simulate(){
 }
 
 void worldmanager::update(){
+	/*
 	std::random_device dev;
     std::mt19937 rng(dev());
     //get maxfood from world 0 since it always exists and is the same for all worlds
     std::uniform_int_distribution<std::mt19937::result_type> fooddist (0,Worlds[0].maxfood);
-
+    //all worlds need the same amound of food otherwise you can't compare the fitness since more food = more fitness
+	int newrandfood = fooddist(rng);
+	*/
 	float inputith[MAX][MAX];
 	float inputhto[MAX][MAX];
-
-	//all worlds need the same amound of food otherwise you can't compare the fitness since more food = more fitness
-	int newrandfood = fooddist(rng);
 
 	for(std::vector<world>::size_type i = 0; i != Worlds.size(); i++) {
 		averagefitness += Worlds[i].getmaxfitness();

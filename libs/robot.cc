@@ -14,7 +14,7 @@ robot::robot(float _x, float _y, int _rotation, int _nrobot, float _width){
  	speed = 1.0;
  	turnspeed = 45.0;
  	//neural network
-	inputs = 9;
+	inputs = 6;
 	outputs = 2;
 	hiddenlayers = 4;
 	//generational learning
@@ -50,7 +50,7 @@ float robot::activation(float x){
 
 //simulate the robot, 
 void robot::simulate(float foodleft, float foodahead, float foodright, float distahead,float distleft,float distright, float robotahead, float robotleft, float robotright){
-	//setup the inputs for the neural network
+	//setup the inputs for the neural network (remember input[0] is the bias)
 	//intensity of food in the 0-60 degrees of the robots fov
 	input[1] = foodleft;
 	//intensity of food in the 60-120 degrees of the robots fov
@@ -111,7 +111,7 @@ void robot::neuralnetwork(){
 	rotation = fixrotation(rotation);
 
 	//std::cout<<"after: speed: "<<speed<<", rotation: "<<rotation<<std::endl;
-	//std::cout<<"input1: "<<input[1]<<", input2: "<<input[2]<<", input3: "<<input[3]<<", wallahead: "<<input[4]<<", wallleft: "<<input[5]<<", wallright: "<<input[6]<<std::endl;
+	//std::cout<<"foodleft: "<<input[1]<<", foodahead: "<<input[2]<<", foodright: "<<input[3]<<", wallahead: "<<input[4]<<", wallleft: "<<input[5]<<", wallright: "<<input[6]<<", robotleft: "<<input[7]<<", robotahead: "<<input[8]<<", robotright: "<<input[9]<<std::endl;
 	//std::cout<<"inoutput1: "<<inoutput[0]<<", inoutput2: "<<inoutput[1]<<std::endl;
 	//std::cout<<"output1: "<<netoutput[0]<<", output2: "<<netoutput[1]<<std::endl;
 }
@@ -140,10 +140,10 @@ void robot::newith(float inputarray[MAX][MAX]){
 	for (int i = 0; i < MAX; i++){
 		for (int j = 0; j < MAX; j++){
 			//add small variation to the recieved genes relative to the weight [-0.05% - 0.05%]
-			inputtohidden[i][j] = inputarray[i][j] + inputarray[i][j] * (((float)widthdist (rng))-500)/500 * learningrate;
+			//inputtohidden[i][j] = inputarray[i][j] + inputarray[i][j] * (((float)widthdist (rng))-500)/500 * learningrate;
 
 			//add small variation to the recieved genes not relative to the weight [-learningrate - learningrate]
-			//inputtohidden[i][j] = inputarray[i][j] + (((float)widthdist (rng))-500)/500 * learningrate;
+			inputtohidden[i][j] = inputarray[i][j] + (((float)widthdist (rng))-500)/500 * learningrate;
 		}
 	}
 	//std::cout<<"after ith[1][1]"<<inputtohidden[1][1]<<std::endl;
@@ -157,9 +157,9 @@ void robot::newhto(float inputarray[MAX][MAX]){
 	for (int i = 0; i < MAX; i++){
 		for (int j = 0; j < MAX; j++){
 			//add small variation to the recieved genes relative to the weight [-0.05% - 0.05%]
-			hiddentooutput[i][j] = inputarray[i][j] + inputarray[i][j] * (((float)widthdist (rng))-500)/500 * learningrate;
+			//hiddentooutput[i][j] = inputarray[i][j] + inputarray[i][j] * (((float)widthdist (rng))-500)/500 * learningrate;
 			//add small variation to the recieved genes not relative to the weight [-learningrate - learningrate]
-			//hiddentooutput[i][j] = inputarray[i][j] + (((float)widthdist (rng))-500)/500 * learningrate;
+			hiddentooutput[i][j] = inputarray[i][j] + (((float)widthdist (rng))-500)/500 * learningrate;
 		}
 	}
 }
@@ -213,7 +213,5 @@ void robot::savenodes(std::string filename){
 		}
 		outputfile<<"\n";
 	}
-
-
 	outputfile.close();
 }

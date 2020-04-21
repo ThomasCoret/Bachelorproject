@@ -1,21 +1,21 @@
 #include "world.h"
 
 #define fitnessgainfood 100
-#define nrays 30
+#define nrays 20
 #define raylength 20
-#define raystepsize 0.1
+#define raystepsize 0.2
 #define ROT 360.0
 #define FOV 180.0
 #define NFOVDISTR 3
 
 world::world(){
 	frames = 0;
-	width = 50;
-	height = 50;
+	width = 100;
+	height = 100;
 	//root of width squared + height squared
 	maxdistance = (float)sqrt(pow(width,2) + pow(height,2));
-	nrobots = 1;
-	maxfood = 1;
+	nrobots = 2;
+	maxfood = 3;
 	foodwidth = 2.0;
 	robotwidth = 2.0;
 	worlddone = false;
@@ -36,9 +36,6 @@ world::world(){
 		//spawn robot in a random location
 		float newx = ((float)widthdist (rng))/10;
 		float newy = ((float)heightdist(rng))/10;
-		//spawn robot in the middle of the map
-		//float newx = width/2;
-		//float newy = height/2;
 		float newrot = ((float)rotdist (rng))/10;
 		robot Newrobot(newx, newy, newrot, i, robotwidth);
 		robots.push_back(Newrobot);
@@ -81,9 +78,6 @@ void world::randomizeworld(int randfood){
 		//spawn robot in a random location
 		float newx = ((float)widthdist (rng))/10;
 		float newy = ((float)heightdist(rng))/10;
-		//spawn robot in the middle of the map
-		//float newx = width/2;
-		//float newy = height/2;
 		float newrot = ((float)rotdist (rng))/10;
 		robots[i].rotation = newrot;
 		robots[i].x = newx;
@@ -99,7 +93,6 @@ bool world::done(){
 }
 
 void world::simulate(){
-	//test
 	for(std::vector<robot>::size_type i = 0; i < robots.size(); i++) {
 		checkfoodcollision(i);
 		
@@ -124,9 +117,9 @@ void world::simulate(){
 	//check if world is done
 	if(nfood < 1 && !worlddone){
 		//give all robots a bonus for collecting all food (for simplicity equal to collecting an extra food)
-		//for(std::vector<robot>::size_type i = 0; i < robots.size(); i++) {
-			//robots[i].fitness += fitnessgainfood;
-		//}
+		for(std::vector<robot>::size_type i = 0; i < robots.size(); i++) {
+			robots[i].fitness += fitnessgainfood;
+		}
 		worlddone = true;
 	}
 	frames++;
@@ -188,7 +181,7 @@ float world::castrayfood(float x, float y, float degree){
 			float fw = foods[j].width;
 			//collision with food
 			if((fx + fw > x ) && (fx - fw < x) && (fy + fw > y) && (fy - fw< y)){
-				//don return length just that it has seen food
+				//don't return length just that it has seen food
 				return 1.0;
 				//return length to food+
 				//return (float)sqrt(pow(abs(originalx - fx),2) + pow(abs(originaly - fy),2)) / raylength;
@@ -196,6 +189,7 @@ float world::castrayfood(float x, float y, float degree){
 		}
 		x += raystepsize * cos(degree*M_PI/180);
 		y += raystepsize * sin(degree*M_PI/180);
+		//if x or y out of bounds end the loop
 		if(x>width || x<0||y>height||y<0)
 			i = raylength;
 	}
@@ -207,7 +201,7 @@ float world::castrayrobot(float x, float y, float degree, std::vector<robot>::si
 	float originalx = x;
 	float originaly = y;
 	for(float i = 0; i < raylength; i += raystepsize){
-		for(std::vector<robot>::size_type j = 0; j < foods.size(); j++) {
+		for(std::vector<robot>::size_type j = 0; j < robots.size(); j++) {
 			//don't check collision with the robot sending the rays (obviously)
 			if(j != currobot){
 				float fx = robots[j].x;
@@ -215,7 +209,7 @@ float world::castrayrobot(float x, float y, float degree, std::vector<robot>::si
 				float fw = robots[j].width;
 				//collision with food
 				if((fx + fw > x ) && (fx - fw < x) && (fy + fw > y) && (fy - fw< y)){
-					//don return length just that it has seen food
+					//don't return length just that it has seen robot
 					return 1.0;
 					//return length to food+
 					//return (float)sqrt(pow(abs(originalx - fx),2) + pow(abs(originaly - fy),2)) / raylength;
@@ -224,6 +218,7 @@ float world::castrayrobot(float x, float y, float degree, std::vector<robot>::si
 		}
 		x += raystepsize * cos(degree*M_PI/180);
 		y += raystepsize * sin(degree*M_PI/180);
+		//if x or y out of bounds end the loop
 		if(x>width || x<0||y>height||y<0)
 			i = raylength;
 	}
