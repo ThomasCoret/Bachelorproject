@@ -99,6 +99,7 @@ bool world::done(){
 }
 
 void world::simulate(){
+	//test
 	for(std::vector<robot>::size_type i = 0; i < robots.size(); i++) {
 		checkfoodcollision(i);
 		
