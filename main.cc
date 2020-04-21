@@ -370,6 +370,26 @@ void keyboard(unsigned char key, int x, int y)
 		case 'r': // randomize the world
 			World.randomizeworld(0);
 		    break;
+		case 'w': // up
+			   g_posY = g_posY + 1.0;
+			   break;
+		case 's': // down
+			   g_posY = g_posY - 1.0;
+			   break;
+		case 'a': // left
+			   g_orientation = g_orientation - 15.0;
+			   break;
+		case 'd': // right
+			   g_orientation = g_orientation + 15.0;
+			   break;
+		case 'f': // forwards
+			   g_posX = g_posX + sin(g_orientation / 180.0 * M_PI);
+			   g_posZ = g_posZ - cos(g_orientation / 180.0 * M_PI);
+			   break;
+		case 'v': //backwards
+			   g_posX = g_posX - sin(g_orientation / 180.0 * M_PI);
+			   g_posZ = g_posZ + cos(g_orientation / 180.0 * M_PI);
+			   break;
 	}
 }
 

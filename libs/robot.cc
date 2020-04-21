@@ -1,13 +1,6 @@
 #include "robot.h"
 
-
-//redundant
-robot::robot(){
-	x = 0.0;
-	y = 0.0; 
-}
-
-robot::robot(float _x, float _y, int _rotation, int _nrobot){
+robot::robot(float _x, float _y, int _rotation, int _nrobot, float _width){
 	srand (time(NULL));
 	x = _x;
 	y = _y;
@@ -16,11 +9,15 @@ robot::robot(float _x, float _y, int _rotation, int _nrobot){
 	radius = 20.0;
 	grabradius = 3.0;
 	maxspeed = 0.5;
+	width = _width;
+	//robot movement
  	speed = 1.0;
  	turnspeed = 45.0;
-	inputs = 6;
+ 	//neural network
+	inputs = 9;
 	outputs = 2;
 	hiddenlayers = 4;
+	//generational learning
 	fitness = 0;
 	startlearningrate = 0.2;
 	endlearningrate = 0.01;
@@ -52,20 +49,26 @@ float robot::activation(float x){
 }
 
 //simulate the robot, 
-void robot::simulate(float foodtotheleft, float foodahead, float foodtotheright, float distahead,float distleft,float distright){
+void robot::simulate(float foodleft, float foodahead, float foodright, float distahead,float distleft,float distright, float robotahead, float robotleft, float robotright){
 	//setup the inputs for the neural network
-	//first input for the robot is the intensity of food in the 0-60 degrees of the robots fov
-	input[1] = foodtotheleft;
-	//first input for the robot is the intensity of food in the 60-120 degrees of the robots fov
+	//intensity of food in the 0-60 degrees of the robots fov
+	input[1] = foodleft;
+	//intensity of food in the 60-120 degrees of the robots fov
 	input[2] = foodahead;
-	//first input for the robot is the intensity of food in the 120-180 degrees of the robots fov
-	input[3] = foodtotheright;
+	//intensity of food in the 120-180 degrees of the robots fov
+	input[3] = foodright;
 	//distance to top wall
 	input[4] = distahead;
 	//distance to left wall
 	input[5] = distleft;
 	//distance to right wall
 	input[6] = distright;
+	//intensity of robots in the 0-60 degrees of the robots fov
+	input[7] = robotleft;
+	//intensity of robots in the 60-120 degrees of the robots fov
+	input[8] = robotahead;
+	//intensity of robots in the 120-180 degrees of the robots fov
+	input[9] = robotright;
 	neuralnetwork();
 }
 

@@ -10,6 +10,6 @@ class food{
 	//functionS
 	public:
 		food();
-		food(float, float, int);
+		food(float, float, int, float);
 };
 #endif

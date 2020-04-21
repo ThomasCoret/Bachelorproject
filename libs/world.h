@@ -21,15 +21,21 @@ class world{
 		float currentaveragefitness;
 		float maxdistance;
 		bool worlddone;
+		float foodwidth;
+		float robotwidth;
 
 	//functions
 	private:
 		//check if there is food ahead of the given parameters
 		float foodahead(float, float, float, float, int);
+		//check if there is food ahead of the given parameters
+		float robotahead(float, float, float, float, int, std::vector<robot>::size_type);
 		//return a char based on a robots rotation (for drawworld)
 		char robotchar(int);
 		//cast a ray in the direction of the rotation from the passed location
-		float castray(float, float, float);
+		float castrayfood(float, float, float);
+		//cast a ray in the direction of the rotation from the passed location
+		float castrayrobot(float, float, float, std::vector<robot>::size_type);
 		//distance to wall in the direction of the rotation
 		float distancetowall(float, float, float);
 		
