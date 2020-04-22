@@ -19,10 +19,10 @@ class world{
 		std::vector<food> foods;
 		float currentmaxfitness;
 		float currentaveragefitness;
-		float maxdistance;
 		bool worlddone;
 		float foodwidth;
 		float robotwidth;
+		bool social;
 
 	//functions
 	private:
@@ -63,9 +63,17 @@ class world{
 		float getaveragefitness();
 		//get the max fitness of the current robots
 		float getmaxfitness();
+		//return the ith of robot 0 (used for only 1 robot or identical robots)
 		void getith(float[MAX][MAX]);
+		//return the hto of robot 0 (used for only 1 robot or identical robots)
 		void gethto(float[MAX][MAX]);
+		//give new ith to all the robots (the same mutation)
 		void newith(float[MAX][MAX]);
+		//give new hto to all the robots (the same mutation)
 		void newhto(float[MAX][MAX]);
+		//make the robots in the world the same
+		void clonerobots();
+		//return the totalfitness of this world
+		float getworldfitness();
 };
 #endif

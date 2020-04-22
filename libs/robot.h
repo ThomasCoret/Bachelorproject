@@ -31,8 +31,6 @@ class robot{
 		int outputs;
 		//amount of hidden layers
 		int hiddenlayers;
-		//learningspeed
-		float learningrate;
 		//start learningrate
 		float startlearningrate;
 		//end learningrate
@@ -63,6 +61,8 @@ class robot{
 		int inputs;
 		//width of the robot (to be seen by other robots)
 		float width;
+		//learningspeed
+		float learningrate;
 
 	//functionS
 	private:

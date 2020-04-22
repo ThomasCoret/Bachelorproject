@@ -19,10 +19,11 @@ class worldmanager{
 		int nworlds;
 		int generations;
 		std::vector<world> Worlds;
+		bool identicalrobots;
 
 	//functions
 	public:
-		worldmanager(int, int);
+		worldmanager(int, int, bool);
 		//do one step for all the worlds
 		void simulate();
 		//vind the best world(s) and update the rest of the worlds with their nodes
@@ -33,8 +34,6 @@ class worldmanager{
 		void getith(float[MAX][MAX]);
 		//get hto of best world
 		void gethto(float[MAX][MAX]);
-	private:
-
 };
 
 #endif

@@ -1,11 +1,16 @@
 #include "worldmanager.h"
 
-worldmanager::worldmanager(int _nworlds, int _generations){
+worldmanager::worldmanager(int _nworlds, int _generations, bool _identicalrobots){
 	nworlds = _nworlds;
 	generations = _generations;
-
+	identicalrobots = _identicalrobots;
 	for(int i = 0; i < nworlds; i++){
 		world Newworld;
+		//if this is a world with identical robots clone the robots so they are the same
+		if(identicalrobots){
+			Newworld.clonerobots();
+		}
+
 		Worlds.push_back(Newworld);
 	}
 
@@ -21,7 +26,7 @@ void worldmanager::simulate(){
 }
 
 void worldmanager::update(){
-	/*
+	/* //  code for random food (also replace the 0 in randomizeworld with newrandfood)
 	std::random_device dev;
     std::mt19937 rng(dev());
     //get maxfood from world 0 since it always exists and is the same for all worlds
@@ -50,6 +55,8 @@ void worldmanager::update(){
 			Worlds[i].newith(inputith);
 			Worlds[i].newhto(inputhto);
 			Worlds[i].robots[0].adjustlearningrate((float)1/generations);
+			//we need to clone the robots since newith and newhto only update and mutate robot[0]
+			Worlds[i].clonerobots();
 		}
 		Worlds[i].randomizeworld(0);
 	}

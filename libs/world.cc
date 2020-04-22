@@ -1,6 +1,7 @@
 #include "world.h"
 
 #define fitnessgainfood 100
+#define socialfitnessgainfood 50
 #define nrays 20
 #define raylength 20
 #define raystepsize 0.2
@@ -9,16 +10,21 @@
 #define NFOVDISTR 3
 
 world::world(){
-	frames = 0;
+	//world size
 	width = 100;
 	height = 100;
-	//root of width squared + height squared
-	maxdistance = (float)sqrt(pow(width,2) + pow(height,2));
+
+	//whats in the world
 	nrobots = 2;
 	maxfood = 3;
+
+	//widths for raycast collision 
 	foodwidth = 2.0;
 	robotwidth = 2.0;
-	worlddone = false;
+	
+	//true = robots gain fitness from other robots collecting food
+	social = true;
+
 	//random number generating
 	std::random_device dev;
     std::mt19937 rng(dev());
@@ -27,11 +33,14 @@ world::world(){
 	std::uniform_int_distribution<std::mt19937::result_type> heightdist (foodwidth * 10, height * 10 - foodwidth * 10); // distribution in range [foodwidth*10, height*10 - foodwidth*10]
 	std::uniform_int_distribution<std::mt19937::result_type> rotdist (0,ROT*10); // distribution in range [0, rot]
 	
-
+	//setup the start of the world
+	frames = 0;
+	worlddone = false;
 	nfood = maxfood;
 	currentmaxfitness = 0;
 	currentaveragefitness = 0;
 
+	//setup the robots
 	for(int i = 0; i < nrobots; i++){
 		//spawn robot in a random location
 		float newx = ((float)widthdist (rng))/10;
@@ -40,6 +49,8 @@ world::world(){
 		robot Newrobot(newx, newy, newrot, i, robotwidth);
 		robots.push_back(Newrobot);
 	}
+
+	//setup the food
 	for(int i = 0; i < nfood; i++){
 		float newx = ((float)widthdist (rng))/10;
 		float newy = ((float)heightdist(rng))/10;
@@ -84,8 +95,6 @@ void world::randomizeworld(int randfood){
 		robots[i].y = newy;
 		robots[i].fitness = 0;
 	}
-	//disabled for random food
-	
 }
 
 bool world::done(){
@@ -117,8 +126,8 @@ void world::simulate(){
 	//check if world is done
 	if(nfood < 1 && !worlddone){
 		//give all robots a bonus for collecting all food (for simplicity equal to collecting an extra food)
-		for(std::vector<robot>::size_type i = 0; i < robots.size(); i++) {
-			robots[i].fitness += fitnessgainfood;
+		for(std::vector<robot>::size_type j = 0; j < robots.size(); j++) {
+			robots[j].fitness += fitnessgainfood;
 		}
 		worlddone = true;
 	}
@@ -251,6 +260,15 @@ void world::checkfoodcollision(std::vector<robot>::size_type i){
 		//collision with food
 		if((fx > rx - rr) && (fx < rx + rr) && (fy > ry - rr) && (fy < ry + rr)){
 			robots[i].fitness += fitnessgainfood;
+			//if social other robots also gain fitness
+			if(social){
+				for(std::vector<robot>::size_type k = 0; k != robots.size(); k++) {
+					//check that we don't give extra fitness to the robot that touched the food only other robots
+					if(i!=k){
+						robots[k].fitness += socialfitnessgainfood;
+					}
+				}
+			}
 			foods.erase(foods.begin() + j);
 			nfood--;
 			//subtract 1 from iterator since we erase the current food
@@ -260,21 +278,23 @@ void world::checkfoodcollision(std::vector<robot>::size_type i){
 }
 
 void world::updaterobots(float adapt){
-	int maxfitness = -9000000;
-	std::vector<robot>::size_type bestrobot = -1;
 	float bestinputtohidden[MAX][MAX];
 	float besthiddentooutput[MAX][MAX];
+
+	int maxfitness = -9000000;
+	std::vector<robot>::size_type bestrobot = -1;
 	float avaragefitness = 0;
+
 	//find the most succesfull robot
 	for(std::vector<robot>::size_type i = 0; i != robots.size(); i++) {
-		std::cout<<robotchar(robots[i].nrobot)<<": "<<robots[i].fitness<<std::endl;
+		//std::cout<<robotchar(robots[i].nrobot)<<": "<<robots[i].fitness<<std::endl;
 		avaragefitness += robots[i].fitness;
 		if(robots[i].fitness > maxfitness){
 			maxfitness = robots[i].fitness;
 			bestrobot = i;
 		}
 	}
-	std::cout<<"best robot: "<<robotchar(robots[bestrobot].nrobot)<<", fitness: "<<robots[bestrobot].fitness<<std::endl;
+	//std::cout<<"best robot: "<<robotchar(robots[bestrobot].nrobot)<<", fitness: "<<robots[bestrobot].fitness<<std::endl;
 	//take genes from best robot
 	robots[bestrobot].returnith(bestinputtohidden);
 	robots[bestrobot].returnhto(besthiddentooutput);
@@ -392,13 +412,13 @@ void world::loadrobot(std::string filename){
 			}
 
 		}
+		for(std::vector<robot>::size_type i = 0; i != robots.size(); i++) {
+			robots[i].copyith(inputith);
+			robots[i].copyhto(inputhto);
+		}
 	}
-	else std::cout<<"can't open file"<<std::endl;
-
-	for(std::vector<robot>::size_type i = 0; i != robots.size(); i++) {
-		robots[i].copyith(inputith);
-		robots[i].copyhto(inputhto);
-	}
+	else 
+		std::cout<<"can't open file"<<std::endl;
 }
 
 float world::getaveragefitness(){
@@ -410,6 +430,7 @@ float world::getaveragefitness(){
 }
 
 float world::getmaxfitness(){
+	//fitness can be negative so the number needs to be big and negative
 	float max = -100000;
 	for(auto x : robots){
 		if(x.fitness > max)
@@ -418,12 +439,12 @@ float world::getmaxfitness(){
 	return max;
 }
 
-//the functions below are used in a situation with only 1 robot so 0 is hardcoded
+//the functions below are used in a situation with only 1 robot or identical robots so 0 is hardcoded
 void world::getith(float input[MAX][MAX]){
 	robots[0].returnith(input);
-	
 }
 
+//the functions below are used in a situation with only 1 robot or identical robots so 0 is hardcoded
 void world::gethto(float input[MAX][MAX]){
 	robots[0].returnhto(input);
 }
@@ -434,4 +455,25 @@ void world::newith(float input[MAX][MAX]){
 
 void world::newhto(float input[MAX][MAX]){
 	robots[0].newhto(input);
+}
+
+void world::clonerobots(){
+	float ith[MAX][MAX];
+	float hto[MAX][MAX];
+	//copy robot 0's nodes
+	robots[0].returnith(ith);
+	robots[0].returnhto(hto);
+	//give his nodes to all other robots
+	for(std::vector<robot>::size_type i = 1; i != robots.size(); i++) {
+		robots[i].copyith(ith);
+		robots[i].copyhto(hto);
+	}
+}
+
+float world::getworldfitness(){
+	float totalfitness = 0;
+	for(auto x : robots){
+		totalfitness += x.fitness;
+	}
+	return totalfitness;
 }

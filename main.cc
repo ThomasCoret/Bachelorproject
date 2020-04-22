@@ -1,6 +1,3 @@
-//#include "libs/food.h"
-//#include "libs/robot.h"
-
 #include "libs/worldmanager.h"
 #include "GL/glut.h"
 #define _USE_MATH_DEFINES
@@ -51,7 +48,7 @@ GLfloat low_shininess[] = { 5.0 };
 GLfloat high_shininess[] = { 100.0 };
 GLfloat mat_emission[] = {0.3, 0.2, 0.2, 0.0};
 
-float g_posX = -20.0, g_posY = 30.0, g_posZ = World.width/2;
+float g_posX = -40.0, g_posY = 40.0, g_posZ = World.width/2;
 float g_orientation = 90.0; // y axis
 
 void generationallearning2(bool, string);
@@ -235,8 +232,9 @@ void generationallearning(bool save, string filename){
 //train robots seperately in their own world
 void generationallearning2(bool save, string filename){
 	//amount of parallell worlds training robots
+	bool identicalrobots = true;
 	int nworlds = 20;
-	worldmanager WM(nworlds, generations);
+	worldmanager WM(nworlds, generations, identicalrobots);
 
 	//always need to declarate outputfile
 	ofstream outputfile;
@@ -270,6 +268,7 @@ void generationallearning2(bool save, string filename){
 	WM.getith(inputith);
 	World.newhto(inputhto);
 	World.newith(inputith);
+	World.clonerobots();
 }
 
 /************************************************  Glut stuff  ************************************************/

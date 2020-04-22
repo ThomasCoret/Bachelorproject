@@ -2,19 +2,23 @@
 
 robot::robot(float _x, float _y, int _rotation, int _nrobot, float _width){
 	srand (time(NULL));
+	//passed in variables
 	x = _x;
 	y = _y;
+	width = _width;
 	nrobot = _nrobot;
 	rotation = _rotation;
+
+	//
 	radius = 20.0;
 	grabradius = 3.0;
 	maxspeed = 0.5;
-	width = _width;
+	
 	//robot movement
  	speed = 1.0;
  	turnspeed = 45.0;
  	//neural network
-	inputs = 6;
+	inputs = 9;
 	outputs = 2;
 	hiddenlayers = 4;
 	//generational learning
