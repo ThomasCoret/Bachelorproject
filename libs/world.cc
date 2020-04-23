@@ -1,7 +1,7 @@
 #include "world.h"
 
 #define fitnessgainfood 100
-#define socialfitnessgainfood 100
+#define socialfitnessgainfood 200
 #define nrays 20
 #define raylength 20
 #define raystepsize 0.2
