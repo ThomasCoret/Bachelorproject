@@ -1,7 +1,7 @@
 #include "world.h"
 
 #define fitnessgainfood 100
-#define socialfitnessgainfood 200
+#define socialfitnessgainfood 50
 #define nrays 20
 #define raylength 20
 #define raystepsize 0.2
@@ -16,7 +16,7 @@ world::world(){
 
 	//whats in the world
 	nrobots = 2;
-	maxfood = 3;
+	maxfood = 10;
 
 	//widths for raycast collision 
 	foodwidth = 2.0;
@@ -94,6 +94,7 @@ void world::randomizeworld(int randfood){
 		robots[i].x = newx;
 		robots[i].y = newy;
 		robots[i].fitness = 0;
+		robots[i].foodcollected = 0;
 	}
 }
 
@@ -259,7 +260,8 @@ void world::checkfoodcollision(std::vector<robot>::size_type i){
 		float fy = foods[j].y;
 		//collision with food
 		if((fx > rx - rr) && (fx < rx + rr) && (fy > ry - rr) && (fy < ry + rr)){
-			robots[i].fitness += fitnessgainfood;
+			robots[i].fitness += fitnessgainfood / (1 + robots[i].foodcollected);
+			robots[i].foodcollected += 1;
 			//if social other robots also gain fitness
 			if(social){
 				for(std::vector<robot>::size_type k = 0; k != robots.size(); k++) {

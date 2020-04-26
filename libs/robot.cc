@@ -23,6 +23,7 @@ robot::robot(float _x, float _y, int _rotation, int _nrobot, float _width){
 	hiddenlayers = 4;
 	//generational learning
 	fitness = 0;
+	foodcollected = 0;
 	startlearningrate = 0.2;
 	endlearningrate = 0.01;
 	learningrate = startlearningrate;
