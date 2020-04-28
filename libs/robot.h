@@ -63,6 +63,8 @@ class robot{
 		float width;
 		//learningspeed
 		float learningrate;
+		//food collected
+		int foodcollected;
 
 	//functionS
 	private:
