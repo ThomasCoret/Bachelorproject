@@ -26,7 +26,6 @@ class robot{
 		float inoutput[MAX];
 		//output
 		float netoutput[MAX];
-		
 		//amount of outputs
 		int outputs;
 		//amount of hidden layers
@@ -53,8 +52,6 @@ class robot{
 		float radius;
 		//radius in which the robot is able to pick up food
 		float grabradius;
-		//fitness of the robot
-		float fitness;
 		//unique number for the robot
 		int nrobot;
 		//amount of inputs
@@ -65,6 +62,16 @@ class robot{
 		float learningrate;
 		//food collected
 		int foodcollected;
+		//food other robots collected
+		int socialfoodcollected;
+		//distance traveled by the robot
+		float distancetraveled;
+		//whether all food is collected in the current world of the robot (for bonus fitness)
+		bool allfoodcollected;
+		//amount of iterations the robot has done in the current world
+		int iterations;
+		//what generation the robot is part of currently
+		int generation;
 
 	//functionS
 	private:
@@ -97,6 +104,8 @@ class robot{
 		void copyith(float[MAX][MAX]);
 		//copy input array to hiddentoouput
 		void copyhto(float[MAX][MAX]);
+		//current fitness function of the robot
+		float returnfitness();
 	
 };
 #endif
