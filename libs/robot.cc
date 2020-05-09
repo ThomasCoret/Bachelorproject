@@ -9,7 +9,7 @@ robot::robot(float _x, float _y, int _rotation, int _nrobot, float _width){
 	nrobot = _nrobot;
 	rotation = _rotation;
 
-	//
+	//stats
 	radius = 20.0;
 	grabradius = 3.0;
 	maxspeed = 0.5;
@@ -18,7 +18,7 @@ robot::robot(float _x, float _y, int _rotation, int _nrobot, float _width){
  	speed = 1.0;
  	turnspeed = 45.0;
  	//neural network
-	inputs = 9;
+	inputs = 6;
 	outputs = 2;
 	hiddenlayers = 4;
 	//generational learning
@@ -209,7 +209,7 @@ void robot::adjustlearningrate(float adapt){
 }
 
 float robot::returnfitness(){
-	return foodcollected * 100 + distancetraveled / 10;
+	return foodcollected * 100 + distancetraveled / 10 + socialfoodcollected * 50;
 }
 
 void robot::savenodes(std::string filename){
