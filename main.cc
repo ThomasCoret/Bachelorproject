@@ -48,7 +48,7 @@ GLfloat low_shininess[] = { 5.0 };
 GLfloat high_shininess[] = { 100.0 };
 GLfloat mat_emission[] = {0.3, 0.2, 0.2, 0.0};
 
-float g_posX = -40.0, g_posY = 40.0, g_posZ = World.width/2;
+float g_posX = -80.0, g_posY = 80.0, g_posZ = World.width/2;
 float g_orientation = 90.0; // y axis
 
 void generationallearning2(bool, string);

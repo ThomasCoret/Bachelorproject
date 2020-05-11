@@ -9,7 +9,7 @@ robot::robot(float _x, float _y, int _rotation, int _nrobot, float _width){
 	nrobot = _nrobot;
 	rotation = _rotation;
 
-	//
+	//stats
 	radius = 20.0;
 	grabradius = 3.0;
 	maxspeed = 0.5;
@@ -18,12 +18,17 @@ robot::robot(float _x, float _y, int _rotation, int _nrobot, float _width){
  	speed = 1.0;
  	turnspeed = 45.0;
  	//neural network
-	inputs = 9;
+	inputs = 6;
 	outputs = 2;
 	hiddenlayers = 4;
 	//generational learning
-	fitness = 0;
+	//fitness = 0;
 	foodcollected = 0;
+	socialfoodcollected = 0;
+	distancetraveled = 0;
+	allfoodcollected = false;
+	iterations = 0;
+	generation = 0;
 	startlearningrate = 0.2;
 	endlearningrate = 0.01;
 	learningrate = startlearningrate;
@@ -55,6 +60,8 @@ float robot::activation(float x){
 
 //simulate the robot, 
 void robot::simulate(float foodleft, float foodahead, float foodright, float distahead,float distleft,float distright, float robotahead, float robotleft, float robotright){
+	//simulate gets called once every iteration so we can use it to keep track of the 
+	iterations++;	
 	//setup the inputs for the neural network (remember input[0] is the bias)
 	//intensity of food in the 0-60 degrees of the robots fov
 	input[1] = foodleft;
@@ -199,6 +206,10 @@ void robot::adjustlearningrate(float adapt){
 		float totalshift = startlearningrate - endlearningrate;
 		learningrate -= adapt * totalshift;
 	}
+}
+
+float robot::returnfitness(){
+	return foodcollected * 100 + distancetraveled / 10 + socialfoodcollected * 50;
 }
 
 void robot::savenodes(std::string filename){

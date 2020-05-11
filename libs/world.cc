@@ -11,8 +11,8 @@
 
 world::world(){
 	//world size
-	width = 100;
-	height = 100;
+	width = 200;
+	height = 200;
 
 	//whats in the world
 	nrobots = 2;
@@ -84,7 +84,7 @@ void world::randomizeworld(int randfood){
 		food Newfood(newx, newy, i, foodwidth);
 		foods.push_back(Newfood);
 	}
-	//randomize the robots locations
+	//randomize the robots locations and reset necessary
 	for(std::vector<robot>::size_type i = 0; i != robots.size(); i++) {
 		//spawn robot in a random location
 		float newx = ((float)widthdist (rng))/10;
@@ -93,8 +93,12 @@ void world::randomizeworld(int randfood){
 		robots[i].rotation = newrot;
 		robots[i].x = newx;
 		robots[i].y = newy;
-		robots[i].fitness = 0;
+		//robots[i].fitness = 0;
 		robots[i].foodcollected = 0;
+		robots[i].socialfoodcollected = 0;
+		robots[i].distancetraveled = 0;
+		robots[i].allfoodcollected = false;
+		robots[i].iterations = 0;
 	}
 }
 
@@ -122,13 +126,13 @@ void world::simulate(){
 		robots[i].simulate(foodint[0], foodint[1], foodint[2], distance[0], distance[1], distance[2], robotint[0], robotint[1], robotint[2]);
 		moverobot(i);
 		//every step we substract one from the fitness so the robots that collect all food fastest get favoured
-		robots[i].fitness -= 1;
+		//robots[i].fitness -= 1;
 	}
 	//check if world is done
 	if(nfood < 1 && !worlddone){
 		//give all robots a bonus for collecting all food (for simplicity equal to collecting an extra food)
 		for(std::vector<robot>::size_type j = 0; j < robots.size(); j++) {
-			robots[j].fitness += fitnessgainfood;
+			robots[j].allfoodcollected = true;
 		}
 		worlddone = true;
 	}
@@ -246,7 +250,7 @@ void world::moverobot(std::vector<robot>::size_type i){
 	if(robots[i].x < 0)      robots[i].x = 0;
 	if(robots[i].y < 0)		 robots[i].y = 0;
 	//robots gain fitness for the amount they moved
-	robots[i].fitness += sqrt(pow(abs(robots[i].x - robotx),2) + pow(abs(robots[i].y - roboty),2));
+	robots[i].distancetraveled += sqrt(pow(abs(robots[i].x - robotx),2) + pow(abs(robots[i].y - roboty),2));
 	//std::cout<<"robot "<<i<<" moved: "<<sqrt(pow(abs(robots[i].x - robotx),2) + pow(abs(robots[i].y - roboty),2))<<std::endl;
 }
 
@@ -260,14 +264,14 @@ void world::checkfoodcollision(std::vector<robot>::size_type i){
 		float fy = foods[j].y;
 		//collision with food
 		if((fx > rx - rr) && (fx < rx + rr) && (fy > ry - rr) && (fy < ry + rr)){
-			robots[i].fitness += fitnessgainfood / (1 + robots[i].foodcollected);
+			//robots[i].fitness += fitnessgainfood / (1 + robots[i].foodcollected);
 			robots[i].foodcollected += 1;
-			//if social other robots also gain fitness
+			//if social other robots may also gain fitness
 			if(social){
 				for(std::vector<robot>::size_type k = 0; k != robots.size(); k++) {
 					//check that we don't give extra fitness to the robot that touched the food only other robots
 					if(i!=k){
-						robots[k].fitness += socialfitnessgainfood;
+						robots[k].socialfoodcollected++;
 					}
 				}
 			}
@@ -290,9 +294,9 @@ void world::updaterobots(float adapt){
 	//find the most succesfull robot
 	for(std::vector<robot>::size_type i = 0; i != robots.size(); i++) {
 		//std::cout<<robotchar(robots[i].nrobot)<<": "<<robots[i].fitness<<std::endl;
-		avaragefitness += robots[i].fitness;
-		if(robots[i].fitness > maxfitness){
-			maxfitness = robots[i].fitness;
+		avaragefitness += robots[i].returnfitness();		
+		if(robots[i].returnfitness() > maxfitness){
+			maxfitness = robots[i].returnfitness();
 			bestrobot = i;
 		}
 	}
@@ -309,50 +313,10 @@ void world::updaterobots(float adapt){
 			robots[i].newhto(besthiddentooutput);
 		}
 		robots[i].adjustlearningrate(adapt);
+		robots[i].generation++;
 	}
 	currentaveragefitness = avaragefitness / nrobots;
 	currentmaxfitness = maxfitness;
-}
-
-void world::drawworld(){
-	char worlddraw[width+1][height+1];
-
-	for(int i = 0; i < width + 1; i++){
-		for(int j = 0; j < height + 1; j++){
-			worlddraw[i][j]= ' ';
-			if(i == 0 || i == width || j == 0 || j == height )
-				worlddraw[i][j]= '0';
-		}
-	}
-
-	/* //raycasting draw
-	for(int i = 0 ; i<60;i++){
-		float x = robots[0].x;
-		float y = robots[0].y;
-
-		while(x > 0 && x< width && y > 0 && y <height){
-			x += raystepsize * cos((robots[0].rotation-90+(3*i))*M_PI/180);
-			y += raystepsize * sin((robots[0].rotation-90+(3*i))*M_PI/180);
-			worlddraw[(int)round(x)][(int)round(y)] = 'r'; 
-		}
-	}
-	*/
-
-	for(auto i : robots){
-		worlddraw[(int)round(i.x)][(int)round(i.y)] = robotchar(i.nrobot);
-		//std::cout<<"robot x: "<<i.x<<", y= "<<i.y<<", rot: "<<i.rotation<<std::endl;
-	}
-	for(auto i : foods){
-			worlddraw[(int)round(i.x)][(int)round(i.y)] = '@';
-	}
-	
-	for (int j = height; j >= 0 ; j--){
-		for(int i =0; i < width + 1; i++){
-			std::cout<<worlddraw[i][j]<<" ";
-		}
-		std::cout<<std::endl;
-	} 
-	
 }
 
 char world::robotchar(int nrobot){
@@ -372,8 +336,8 @@ void world::savebestrobot(std::string filename){
 	std::vector<robot>::size_type bestrobot;
 	//find the most succesfull robot
 	for(std::vector<robot>::size_type i = 0; i != robots.size(); i++) {
-		if(robots[i].fitness > maxfitness){
-			maxfitness = robots[i].fitness;
+		if(robots[i].returnfitness() > maxfitness){
+			maxfitness = robots[i].returnfitness();
 			bestrobot = i;
 		}
 	}
@@ -426,7 +390,7 @@ void world::loadrobot(std::string filename){
 float world::getaveragefitness(){
 	float avaragefitness = 0;
 	for(auto x : robots){
-		avaragefitness += x.fitness;
+		avaragefitness += x.returnfitness();
 	}
 	return avaragefitness / nrobots;
 }
@@ -435,8 +399,8 @@ float world::getmaxfitness(){
 	//fitness can be negative so the number needs to be big and negative
 	float max = -100000;
 	for(auto x : robots){
-		if(x.fitness > max)
-			max = x.fitness;
+		if(x.returnfitness() > max)
+			max = x.returnfitness();
 	}
 	return max;
 }
@@ -475,7 +439,7 @@ void world::clonerobots(){
 float world::getworldfitness(){
 	float totalfitness = 0;
 	for(auto x : robots){
-		totalfitness += x.fitness;
+		totalfitness += x.returnfitness();
 	}
 	return totalfitness;
 }
