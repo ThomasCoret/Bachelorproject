@@ -13,7 +13,8 @@ robot::robot(float _x, float _y, int _rotation, int _nrobot, float _width){
 	radius = 20.0;
 	grabradius = 3.0;
 	maxspeed = 0.5;
-	
+	staticlr = true;
+
 	//robot movement
  	speed = 1.0;
  	turnspeed = 45.0;
@@ -29,7 +30,7 @@ robot::robot(float _x, float _y, int _rotation, int _nrobot, float _width){
 	allfoodcollected = false;
 	iterations = 0;
 	generation = 0;
-	startlearningrate = 0.2;
+	startlearningrate = 0.1;
 	endlearningrate = 0.01;
 	learningrate = startlearningrate;
 	//bias
@@ -201,15 +202,17 @@ float robot::fixrotation(float rotation){
 }
 
 void robot::adjustlearningrate(float adapt){
-	//don't go below endlearningrate
-	if(learningrate>endlearningrate){
-		float totalshift = startlearningrate - endlearningrate;
-		learningrate -= adapt * totalshift;
+	if(!staticlr){
+		//don't go below endlearningrate
+		if(learningrate>endlearningrate){
+			float totalshift = startlearningrate - endlearningrate;
+			learningrate -= adapt * totalshift;
+		}
 	}
 }
 
 float robot::returnfitness(){
-	return foodcollected * 100 + distancetraveled / 10 + socialfoodcollected * 50;
+	return foodcollected * 100 + distancetraveled / 10; // + socialfoodcollected * 50;
 }
 
 void robot::savenodes(std::string filename){

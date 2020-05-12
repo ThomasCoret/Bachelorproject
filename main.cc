@@ -4,7 +4,7 @@
 
 using namespace std;
 
-#define generations 150
+#define generations 200
 #define trainingiterations 500
 
 world World;
@@ -37,16 +37,16 @@ int mflag = 0;
 
 //commonly used material values
 GLfloat no_mat[] = { 0.0, 0.0, 0.0, 1.0 };
-GLfloat default_ambient[] = {0.2, 0.2, 0.2, 1.0};
+GLfloat default_ambient[] = { 0.2, 0.2, 0.2, 1.0 };
 GLfloat mat_ambient[] = { 0.7, 0.7, 0.7, 1.0 };
 GLfloat mat_ambient_color[] = { 0.8, 0.8, 0.2, 1.0 };
 GLfloat mat_diffuse[] = { 0.1, 0.5, 0.8, 1.0 };
-GLfloat default_diffuse[] = {0.8, 0.8, 0.8, 1.0};
+GLfloat default_diffuse[] = { 0.8, 0.8, 0.8, 1.0 };
 GLfloat mat_specular[] = { 1.0, 1.0, 1.0, 1.0 };
 GLfloat no_shininess[] = { 0.0 };
 GLfloat low_shininess[] = { 5.0 };
 GLfloat high_shininess[] = { 100.0 };
-GLfloat mat_emission[] = {0.3, 0.2, 0.2, 0.0};
+GLfloat mat_emission[] = { 0.3, 0.2, 0.2, 0.0 };
 
 float g_posX = -80.0, g_posY = 80.0, g_posZ = World.width/2;
 float g_orientation = 90.0; // y axis
@@ -242,22 +242,24 @@ void generationallearning2(bool save, string filename){
 	if(save)
 		outputfile.open(filename);
 
-	
-	for(int k = 0; k < generations; k++){
-		WM.resetfitness();
+	for(int i = 0; i <10; i++){
+		outputfile<<i<<":";
+		for(int k = 0; k < generations; k++){
+			WM.resetfitness();
 
-		for(int j = 0; j < trainingiterations; j++){
-			WM.simulate();
+			for(int j = 0; j < trainingiterations; j++){
+				WM.simulate();
+			}
+
+			WM.update();
+
+			if(save)
+				outputfile<<WM.maxfitness<<";";
+
+			cout<<"generation "<<k<<" done. max fitness: "<<WM.maxfitness<<", avg fitness: "<<WM.averagefitness/nworlds<<std::endl;
 		}
-
-		WM.update();
-
-		if(save)
-			outputfile<<k<<";"<<WM.maxfitness<<";"<<WM.averagefitness/nworlds<<"\n";
-
-		cout<<"generation "<<k<<" done. max fitness: "<<WM.maxfitness<<", avg fitness: "<<WM.averagefitness/nworlds<<std::endl;
+		outputfile<<"\n";
 	}
-
 	if(save)	
 		outputfile.close();
 

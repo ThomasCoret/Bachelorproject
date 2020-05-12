@@ -71,6 +71,8 @@ class robot{
 		int iterations;
 		//what generation the robot is part of currently
 		int generation;
+		//whether we use static or dynamic learningrate
+		bool staticlr;
 
 	//functionS
 	private:
