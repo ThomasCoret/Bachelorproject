@@ -134,7 +134,7 @@ void experiment(){
 	bool savefile = false;
 	char yesorno;
 	string filename = "";
-	string finalname = "graphs/";
+	string finalname = "graphs/socialexperiment/";
 	cout<<"save performance? (y/n)\n";
 	cin>>yesorno;
 	yesorno = toupper(yesorno);
@@ -259,6 +259,20 @@ void generationallearning2(bool save, string filename){
 			cout<<"generation "<<k<<" done. max fitness: "<<WM.maxfitness<<", avg fitness: "<<WM.averagefitness/nworlds<<std::endl;
 		}
 		outputfile<<"\n";
+		float inputith[MAX][MAX];
+		float inputhto[MAX][MAX];
+		//copy the best robot to our single world to view it in glut or save it
+		WM.gethto(inputhto);
+		WM.getith(inputith);
+		World.newhto(inputhto);
+		World.newith(inputith);
+		World.clonerobots();
+		string robotname = "robotsaves/setting5/";
+		robotname += to_string(i);
+		robotname += ".bot";
+		World.savebestrobot(robotname);
+		//randomize robots
+		WM.randomizerobots();
 	}
 	if(save)	
 		outputfile.close();

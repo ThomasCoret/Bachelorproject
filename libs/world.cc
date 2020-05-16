@@ -102,6 +102,13 @@ void world::randomizeworld(int randfood){
 	}
 }
 
+void world::randomizerobots(){
+	for(std::vector<robot>::size_type i = 0; i != robots.size(); i++) {
+		//spawn robot in a random location
+		robots[i].randomize();
+	}
+}
+
 bool world::done(){
 	return worlddone;
 }

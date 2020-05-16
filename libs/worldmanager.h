@@ -34,6 +34,8 @@ class worldmanager{
 		void getith(float[MAX][MAX]);
 		//get hto of best world
 		void gethto(float[MAX][MAX]);
+		//randomize the robots	
+		void randomizerobots();
 };
 
 #endif

@@ -33,6 +33,8 @@ class robot{
 		float startlearningrate;
 		//end learningrate
 		float endlearningrate;
+		//whether the mutations are static or relative
+		bool relativemutation;
 
 	public:
 		//weights from input to hidden
@@ -107,6 +109,7 @@ class robot{
 		void copyhto(float[MAX][MAX]);
 		//current fitness function of the robot
 		float returnfitness();
-	
+		//randomize weights
+		void randomize();
 };
 #endif

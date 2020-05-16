@@ -13,7 +13,8 @@ robot::robot(float _x, float _y, int _rotation, int _nrobot, float _width){
 	radius = 20.0;
 	grabradius = 3.0;
 	maxspeed = 0.5;
-	staticlr = true;
+	staticlr = false;
+	relativemutation = false;
 
 	//robot movement
  	speed = 1.0;
@@ -30,7 +31,7 @@ robot::robot(float _x, float _y, int _rotation, int _nrobot, float _width){
 	allfoodcollected = false;
 	iterations = 0;
 	generation = 0;
-	startlearningrate = 0.1;
+	startlearningrate = 0.2;
 	endlearningrate = 0.01;
 	learningrate = startlearningrate;
 	//bias
@@ -152,11 +153,12 @@ void robot::newith(float inputarray[MAX][MAX]){
     //std::cout<<"before ith[1][1]"<<inputtohidden[1][1]<<", input: "<<inputarray[1][1]<<std::endl;
 	for (int i = 0; i < MAX; i++){
 		for (int j = 0; j < MAX; j++){
-			//add small variation to the recieved genes relative to the weight [-0.05% - 0.05%]
-			//inputtohidden[i][j] = inputarray[i][j] + inputarray[i][j] * (((float)widthdist (rng))-500)/500 * learningrate;
-
-			//add small variation to the recieved genes not relative to the weight [-learningrate - learningrate]
-			inputtohidden[i][j] = inputarray[i][j] + (((float)widthdist (rng))-500)/500 * learningrate;
+			if(relativemutation)
+				//add small variation to the recieved genes relative to the weight [-0.05% - 0.05%]
+				inputtohidden[i][j] = inputarray[i][j] + inputarray[i][j] * (((float)widthdist (rng))-500)/500 * learningrate;
+			else
+				//add small variation to the recieved genes not relative to the weight [-learningrate - learningrate]
+				inputtohidden[i][j] = inputarray[i][j] + (((float)widthdist (rng))-500)/500 * learningrate;
 		}
 	}
 	//std::cout<<"after ith[1][1]"<<inputtohidden[1][1]<<std::endl;
@@ -169,10 +171,12 @@ void robot::newhto(float inputarray[MAX][MAX]){
 
 	for (int i = 0; i < MAX; i++){
 		for (int j = 0; j < MAX; j++){
-			//add small variation to the recieved genes relative to the weight [-0.05% - 0.05%]
-			//hiddentooutput[i][j] = inputarray[i][j] + inputarray[i][j] * (((float)widthdist (rng))-500)/500 * learningrate;
-			//add small variation to the recieved genes not relative to the weight [-learningrate - learningrate]
-			hiddentooutput[i][j] = inputarray[i][j] + (((float)widthdist (rng))-500)/500 * learningrate;
+			if(relativemutation)
+				//add small variation to the recieved genes relative to the weight [-0.05% - 0.05%]
+				hiddentooutput[i][j] = inputarray[i][j] + inputarray[i][j] * (((float)widthdist (rng))-500)/500 * learningrate;
+			else
+				//add small variation to the recieved genes not relative to the weight [-learningrate - learningrate]
+				hiddentooutput[i][j] = inputarray[i][j] + (((float)widthdist (rng))-500)/500 * learningrate;
 		}
 	}
 }
@@ -233,4 +237,18 @@ void robot::savenodes(std::string filename){
 		outputfile<<"\n";
 	}
 	outputfile.close();
+}
+
+void robot::randomize(){
+	std::random_device dev;
+    std::mt19937 rng(dev());
+    std::uniform_int_distribution<std::mt19937::result_type> widthdist  (0,1000); // distribution in range [0, 1000]
+
+	for (int i = 0; i < MAX; i++){
+		for (int j = 0; j < MAX; j++){
+			//initiate hiddenlayers with random values [-4:4]
+			inputtohidden[i][j] = (((float)widthdist (rng))-500)/500 * 4;
+			hiddentooutput[i][j] = (((float)widthdist (rng))-500)/500 * 4;
+		}
+	}
 }

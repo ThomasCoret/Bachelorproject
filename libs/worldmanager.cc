@@ -76,3 +76,9 @@ void worldmanager::gethto(float inputhto[MAX][MAX]){
 	//get the hto nodes from the best robot
 	Worlds[bestworld].gethto(inputhto);
 }
+
+void worldmanager::randomizerobots(){
+	for(std::vector<world>::size_type i = 0; i != Worlds.size(); i++) {
+		Worlds[i].randomizerobots();
+	}
+}

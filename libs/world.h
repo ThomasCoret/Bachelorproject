@@ -43,6 +43,8 @@ class world{
 		world();
 		//reset randomize the world 
 		void randomizeworld(int);
+		//randomize robots
+		void randomizerobots();
 		//world is done when no food is left
 		bool done();
 		//simulate all the robots behiour
