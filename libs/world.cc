@@ -11,8 +11,8 @@
 
 world::world(){
 	//world size
-	width = 100;
-	height = 100;
+	width = 150;
+	height = 150;
 
 	//whats in the world
 	nrobots = 2;
