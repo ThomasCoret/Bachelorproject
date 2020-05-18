@@ -4,7 +4,7 @@ import numpy as np
 
 print("hello world")
 
-f = open("graphs/socialexperiment/setting5.txt")
+f = open("graphs/socialexperiment/setting6.txt")
 
 cols = 10
 rows = 200
@@ -40,7 +40,7 @@ for line in f:
 
 numsum = 0
 
-output = open("graphs/socialexperiment/setting5avg.txt","w+")
+output = open("graphs/socialexperiment/setting6avg.txt","w+")
 
 for x in range(rows):
 	for y in range(cols):
