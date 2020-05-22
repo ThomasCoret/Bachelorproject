@@ -13,7 +13,7 @@ robot::robot(float _x, float _y, int _rotation, int _nrobot, float _width){
 	radius = 20.0;
 	grabradius = 3.0;
 	maxspeed = 0.5;
-	staticlr = false;
+	staticlr = true;
 	relativemutation = false;
 	relu = false;
 

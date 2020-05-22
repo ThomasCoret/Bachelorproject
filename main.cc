@@ -267,7 +267,7 @@ void generationallearning2(bool save, string filename){
 		World.newhto(inputhto);
 		World.newith(inputith);
 		World.clonerobots();
-		string robotname = "robotsaves/solosetting5/";
+		string robotname = "robotsaves/solosetting6/";
 		robotname += to_string(i);
 		robotname += ".bot";
 		World.savebestrobot(robotname);
