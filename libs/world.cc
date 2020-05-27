@@ -433,13 +433,17 @@ void world::newhto(float input[MAX][MAX]){
 void world::clonerobots(){
 	float ith[MAX][MAX];
 	float hto[MAX][MAX];
+	//also give the current learningrate of this generation to the copied robot since before clonerobot is called we only adjust robots[0] learningrate
+	float lr = robots[0].learningrate;
 	//copy robot 0's nodes
 	robots[0].returnith(ith);
 	robots[0].returnhto(hto);
 	//give his nodes to all other robots
+	
 	for(std::vector<robot>::size_type i = 1; i != robots.size(); i++) {
 		robots[i].copyith(ith);
 		robots[i].copyhto(hto);
+		robots[i].learningrate = lr;
 	}
 }
 

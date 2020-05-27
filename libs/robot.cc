@@ -13,7 +13,7 @@ robot::robot(float _x, float _y, int _rotation, int _nrobot, float _width){
 	radius = 20.0;
 	grabradius = 3.0;
 	maxspeed = 0.5;
-	staticlr = true;
+	staticlr = false;
 	relativemutation = false;
 	relu = false;
 
@@ -37,7 +37,7 @@ robot::robot(float _x, float _y, int _rotation, int _nrobot, float _width){
 	allfoodcollected = false;
 	iterations = 0;
 	generation = 0;
-	startlearningrate = 0.2;
+	startlearningrate = 0.1;
 	endlearningrate = 0.01;
 	learningrate = startlearningrate;
 	//bias
