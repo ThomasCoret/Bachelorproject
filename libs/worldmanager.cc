@@ -48,8 +48,10 @@ void worldmanager::update(){
 	//get the nodes from the best robot
 	Worlds[bestworld].getith(inputith);
 	Worlds[bestworld].gethto(inputhto);
-
-	//update the other worlds with the best robot's nodes then randomize them
+	Worlds[bestworld].robots[0].adjustlearningrate((float)1/generations);
+	//clone the robots to adjust the learningrate of the other robots
+	Worlds[bestworld].clonerobots();
+	//update the other worlds with the best robot's nodes then randomize the world
 	for(std::vector<world>::size_type i = 0; i != Worlds.size(); i++) {
 		if(i != bestworld){
 			Worlds[i].newith(inputith);

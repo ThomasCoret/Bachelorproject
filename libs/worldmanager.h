@@ -14,11 +14,12 @@ class worldmanager{
 		float maxfitness;
 		float averagefitness;
 		std::vector<world>::size_type bestworld;	
+		std::vector<world> Worlds;
 
 	private:
 		int nworlds;
 		int generations;
-		std::vector<world> Worlds;
+		
 		bool identicalrobots;
 
 	//functions

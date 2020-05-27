@@ -256,7 +256,7 @@ void generationallearning2(bool save, string filename){
 			if(save)
 				outputfile<<WM.maxfitness<<";";
 
-			cout<<"generation "<<k<<" done. max fitness: "<<WM.maxfitness<<", avg fitness: "<<WM.averagefitness/nworlds<<std::endl;
+			cout<<"generation "<<k<<" done. max fitness: "<<WM.maxfitness<<", avg fitness: "<<WM.averagefitness/nworlds<<", learningrate: "<<WM.Worlds[0].robots[0].learningrate<<std::endl;
 		}
 		outputfile<<"\n";
 		float inputith[MAX][MAX];
@@ -270,7 +270,7 @@ void generationallearning2(bool save, string filename){
 		string robotname = "robotsaves/solosetting2/";
 		robotname += to_string(i);
 		robotname += ".bot";
-		World.savebestrobot(robotname);
+		//World.savebestrobot(robotname);
 		//randomize robots
 		WM.randomizerobots();
 	}
