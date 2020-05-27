@@ -22,7 +22,7 @@ robot::robot(float _x, float _y, int _rotation, int _nrobot, float _width){
  	turnspeed = 45.0;
 
  	//neural network
-	inputs = 6;
+	inputs = 9;
 	if(relu)
 		outputs = 6;
 	else
@@ -37,7 +37,7 @@ robot::robot(float _x, float _y, int _rotation, int _nrobot, float _width){
 	allfoodcollected = false;
 	iterations = 0;
 	generation = 0;
-	startlearningrate = 0.2;
+	startlearningrate = 0.1;
 	endlearningrate = 0.01;
 	learningrate = startlearningrate;
 	//bias
