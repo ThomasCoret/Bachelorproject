@@ -30,10 +30,7 @@ class robot{
 		int outputs;
 		//amount of hidden layers
 		int hiddenlayers;
-		//start learningrate
-		float startlearningrate;
-		//end learningrate
-		float endlearningrate;
+		
 		//whether the mutations are static or relative
 		bool relativemutation;
 		//whether to use relu activation
@@ -62,6 +59,10 @@ class robot{
 		int inputs;
 		//width of the robot (to be seen by other robots)
 		float width;
+		//start learningrate
+		float startlearningrate;
+		//end learningrate
+		float endlearningrate;
 		//learningspeed
 		float learningrate;
 		//food collected

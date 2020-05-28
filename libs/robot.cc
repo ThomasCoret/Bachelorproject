@@ -22,7 +22,7 @@ robot::robot(float _x, float _y, int _rotation, int _nrobot, float _width){
  	turnspeed = 45.0;
 
  	//neural network
-	inputs = 9;
+	inputs = 6;
 	if(relu)
 		outputs = 6;
 	else
@@ -281,4 +281,5 @@ void robot::randomize(){
 			hiddentooutput[i][j] = (((float)widthdist (rng))-500)/500 * 4;
 		}
 	}
+	learningrate = startlearningrate;
 }
