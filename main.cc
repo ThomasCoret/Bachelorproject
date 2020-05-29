@@ -134,7 +134,7 @@ void experiment(){
 	bool savefile = false;
 	char yesorno;
 	string filename = "";
-	string finalname = "graphs/socialexperiment/";
+	string finalname = "graphs/solosocialexperiment/";
 	cout<<"save performance? (y/n)\n";
 	cin>>yesorno;
 	yesorno = toupper(yesorno);
@@ -267,7 +267,7 @@ void generationallearning2(bool save, string filename){
 		World.newhto(inputhto);
 		World.newith(inputith);
 		World.clonerobots();
-		string robotname = "robotsaves/setting5/";
+		string robotname = "robotsaves/solosetting5/";
 		robotname += to_string(i);
 		robotname += ".bot";
 		World.savebestrobot(robotname);
