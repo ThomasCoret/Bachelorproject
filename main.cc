@@ -4,7 +4,7 @@
 
 using namespace std;
 
-#define generations 200
+#define generations 1
 #define trainingiterations 500
 
 world World;
@@ -242,7 +242,7 @@ void generationallearning2(bool save, string filename){
 	if(save)
 		outputfile.open(filename);
 
-	for(int i = 0; i <10; i++){
+	for(int i = 0; i <100; i++){
 		outputfile<<i<<":";
 		for(int k = 0; k < generations; k++){
 			WM.resetfitness();
@@ -256,9 +256,11 @@ void generationallearning2(bool save, string filename){
 			if(save)
 				outputfile<<WM.maxfitness<<";";
 
-			cout<<"generation "<<k<<" done. max fitness: "<<WM.maxfitness<<", avg fitness: "<<WM.averagefitness/nworlds<<", learningrate: "<<WM.Worlds[0].robots[0].learningrate<<std::endl;
+			cout<<i<<": generation "<<k<<" done. max fitness: "<<WM.maxfitness<<", avg fitness: "<<WM.averagefitness/nworlds<<", learningrate: "<<WM.Worlds[0].robots[0].learningrate<<std::endl;
 		}
 		outputfile<<"\n";
+
+		/* uncomment to save robot
 		float inputith[MAX][MAX];
 		float inputhto[MAX][MAX];
 		//copy the best robot to our single world to view it in glut or save it
@@ -271,6 +273,7 @@ void generationallearning2(bool save, string filename){
 		robotname += to_string(i);
 		robotname += ".bot";
 		World.savebestrobot(robotname);
+		*/
 		//randomize robots
 		WM.randomizerobots();
 	}

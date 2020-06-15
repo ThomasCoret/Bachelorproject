@@ -120,16 +120,21 @@ void world::simulate(){
 		float foodint[NFOVDISTR];
 		for(int j =0 ; j<NFOVDISTR; j++){
 			foodint[j] = foodahead(robots[i].x, robots[i].y, robots[i].radius, robots[i].rotation, j);
+			foodint[j] = std::max(0.0f, foodint[j]);
 		}
 		float robotint[NFOVDISTR];
 		for(int j =0 ; j<NFOVDISTR; j++){
 			robotint[j] = robotahead(robots[i].x, robots[i].y, robots[i].radius, robots[i].rotation, j, i);
+			robotint[j] = std::max(0.0f,robotint[j]);
 		}
 		float distance[3];
 		//normalize distance to wall to the ray length and reverse it (1 is close to wall 0 is raylength away)(so the robot can take action when he gets too close to a wall)
 		distance[0] = (raylength - distancetowall(robots[i].x, robots[i].y, robots[i].rotation)) / raylength;
 		distance[1] = (raylength - distancetowall(robots[i].x, robots[i].y, robots[i].rotation - 90.0)) / raylength;
 		distance[2] = (raylength - distancetowall(robots[i].x, robots[i].y, robots[i].rotation + 90.0)) / raylength;
+		//max with 0 to eliminate negative inputs
+		for(int j = 0;j<3;j++)
+			distance[j] = std::max(0.0f, distance[j]);
 		robots[i].simulate(foodint[0], foodint[1], foodint[2], distance[0], distance[1], distance[2], robotint[0], robotint[1], robotint[2]);
 		moverobot(i);
 		//every step we substract one from the fitness so the robots that collect all food fastest get favoured

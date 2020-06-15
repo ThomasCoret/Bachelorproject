@@ -33,8 +33,6 @@ class robot{
 		
 		//whether the mutations are static or relative
 		bool relativemutation;
-		//whether to use relu activation
-		bool relu;
 
 	public:
 		//weights from input to hidden

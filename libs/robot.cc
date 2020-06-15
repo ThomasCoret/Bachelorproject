@@ -13,9 +13,8 @@ robot::robot(float _x, float _y, int _rotation, int _nrobot, float _width){
 	radius = 20.0;
 	grabradius = 3.0;
 	maxspeed = 0.5;
-	staticlr = false;
+	staticlr = true;
 	relativemutation = false;
-	relu = false;
 
 	//robot movement
  	speed = 1.0;
@@ -23,10 +22,7 @@ robot::robot(float _x, float _y, int _rotation, int _nrobot, float _width){
 
  	//neural network
 	inputs = 6;
-	if(relu)
-		outputs = 6;
-	else
-		outputs = 2;
+	outputs = 2;
 	hiddenlayers = 4;
 
 	//generational learning
@@ -63,12 +59,7 @@ robot::robot(float _x, float _y, int _rotation, int _nrobot, float _width){
 }
 
 float robot::activation(float x){
-	if(relu){
-		return std::max(0.0f,x);
-	}
-	else{
-		return 1 / ( 1 + exp(-1*x) );
-	}
+	return (1.0f / ( 1.0f + exp(-1.0f*x) ));
 }
 
 //simulate the robot, 
@@ -107,6 +98,7 @@ void robot::neuralnetwork(){
 	for(int i = 1; i < hiddenlayers + 1; i++){
 		for(int j = 0; j < inputs + 1; j++){
 			inhidden[i] += input[j] * inputtohidden[i][j];
+
 		}
 	}
 
@@ -123,33 +115,16 @@ void robot::neuralnetwork(){
 	for(int i =0;i<outputs;i++){
 		netoutput[i] = activation(inoutput[i]);
 	}
-	if(!relu){
-		//std::cout<<"--------------------------"<<std::endl;
-		//std::cout<<"before: speed: "<<speed<<", rotation: "<<rotation<<std::endl;
-		//update stats based on output
-		//netoutput decides where to turn [-turnspeed,turnspeed]
-		rotation += (netoutput[0] - 0.5) * turnspeed*2;
-		//std::cout<<netoutput[0]<<"  "<<(netoutput[0] - 0.5) * turnspeed*2<<std::endl;
-		//netoutput 1 decides the speed [0, maxspeed]
-		speed = netoutput[1] * maxspeed; 
-	}	
-	else{
-		int biggest = 0;
-		//find which of the turn inputs is the biggest
-		//relu also uses the inoutput since the activation is linear
-		if(inoutput[1]>inoutput[biggest])
-			biggest = 1;
-		if(inoutput[2]>inoutput[biggest])
-			biggest = 2;
-		if(inoutput[3]>inoutput[biggest])
-			biggest = 3;
-		if(inoutput[4]>inoutput[biggest])
-			biggest = 4;
-		//0 = rotate left, 1 = rotate left half, 2 = straight, 3 = rotate right half, 4 = rotate right
-		rotation += (biggest-2) * turnspeed / 2;
-		//cap max output between 0-5
-		speed = std::min(std::max(inoutput[5],0.0f), 5.0f) * maxspeed / 5;
-	}
+
+
+	//std::cout<<"--------------------------"<<std::endl;
+	//std::cout<<"before: speed: "<<speed<<", rotation: "<<rotation<<std::endl;
+	//update stats based on output
+	//netoutput decides where to turn [-turnspeed,turnspeed]
+	rotation += (netoutput[0] - 0.5) * turnspeed*2;
+	//std::cout<<netoutput[0]<<"  "<<(netoutput[0] - 0.5) * turnspeed*2<<std::endl;
+	//netoutput 1 decides the speed [0, maxspeed]
+	speed = netoutput[1] * maxspeed; 
 
 	//fix the rotation if it got too big or below 0
 	rotation = fixrotation(rotation);
