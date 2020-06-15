@@ -134,7 +134,7 @@ void experiment(){
 	bool savefile = false;
 	char yesorno;
 	string filename = "";
-	string finalname = "graphs/solosocialexperiment/";
+	string finalname = "graphs/socialexperiment/";
 	cout<<"save performance? (y/n)\n";
 	cin>>yesorno;
 	yesorno = toupper(yesorno);
