@@ -4,7 +4,7 @@
 
 using namespace std;
 
-#define generations 1
+#define generations 200
 #define trainingiterations 500
 
 world World;
@@ -133,8 +133,9 @@ void load(){
 void experiment(){
 	bool savefile = false;
 	char yesorno;
+	//no Thomas these are not the same you can't delete filename
 	string filename = "";
-	string finalname = "graphs/socialexperiment/";
+	string finalname = "graphs/solosocialexperiment/";
 	cout<<"save performance? (y/n)\n";
 	cin>>yesorno;
 	yesorno = toupper(yesorno);
@@ -242,7 +243,7 @@ void generationallearning2(bool save, string filename){
 	if(save)
 		outputfile.open(filename);
 
-	for(int i = 0; i <100; i++){
+	for(int i = 0; i <10; i++){
 		outputfile<<i<<":";
 		for(int k = 0; k < generations; k++){
 			WM.resetfitness();
