@@ -29,6 +29,9 @@ class worldmanager{
 		void simulate();
 		//vind the best world(s) and update the rest of the worlds with their nodes
 		void update();
+		//vind the best n worlds and update the rest of the worlds with their nodes (the best world stays the same just like normal update)
+		//parameter is the amount of top worlds you want to update on
+		void update(int);
 		//reset the fitness counters
 		void resetfitness();
 		//get ith of best world

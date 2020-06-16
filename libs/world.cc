@@ -15,7 +15,7 @@ world::world(){
 	height = 100;
 
 	//whats in the world
-	nrobots = 2;
+	nrobots = 1;
 	maxfood = 10;
 
 	//widths for raycast collision 

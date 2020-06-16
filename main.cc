@@ -250,8 +250,8 @@ void generationallearning2(bool save, string filename){
 			for(int j = 0; j < trainingiterations; j++){
 				WM.simulate();
 			}
-
-			WM.update();
+			//update based on the best 5 worlds the single best world stays the same
+			WM.update(5);
 
 			if(save)
 				outputfile<<WM.maxfitness<<";";
@@ -260,7 +260,7 @@ void generationallearning2(bool save, string filename){
 		}
 		outputfile<<"\n";
 
-		/* uncomment to save robot
+		///* uncomment to not save robot
 		float inputith[MAX][MAX];
 		float inputhto[MAX][MAX];
 		//copy the best robot to our single world to view it in glut or save it
@@ -269,11 +269,11 @@ void generationallearning2(bool save, string filename){
 		World.newhto(inputhto);
 		World.newith(inputith);
 		World.clonerobots();
-		string robotname = "robotsaves/solosetting5/";
+		string robotname = "robotsaves/solosetting7/";
 		robotname += to_string(i);
 		robotname += ".bot";
 		World.savebestrobot(robotname);
-		*/
+		//*/
 		//randomize robots
 		WM.randomizerobots();
 	}

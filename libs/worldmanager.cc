@@ -64,6 +64,61 @@ void worldmanager::update(){
 	}
 }
 
+void worldmanager::update(int n){
+	//if there are too few worlds a bestworlds index will be -1 so output is invalid and will likely crash I could use a try catch but thats too much work
+	if(n > nworlds){
+		std::cout<<"WARNING: there too few worlds to use: "<<n<<" best worlds please disregard any output!"<<std::endl;
+	}
+	float inputith[n][MAX][MAX];
+	float inputhto[n][MAX][MAX];
+	float bestfitnesses[n];
+	std::vector<world>::size_type bestworlds[n];
+	for(int i = 0; i<n; i++){
+		bestfitnesses[i] = -2000000;
+		bestworlds[i] = -1;
+	}
+	for(std::vector<world>::size_type i = 0; i != Worlds.size(); i++) {
+		averagefitness += Worlds[i].getmaxfitness();
+		bool done = false;
+		for(int j = 0; j<n && !done; j++){
+			//We found the j'th best robot
+			if(Worlds[i].getmaxfitness() > bestfitnesses[j]){
+				//we found the best robot so far
+				if(j == 0){
+					maxfitness = Worlds[i].getmaxfitness();
+					bestworld = i;
+				}
+				//we need to shift all bestfitnesses one place down under our number. 
+				for(int i = n; i>j; i--){
+					bestfitnesses[i] = bestfitnesses[i-1];
+					bestworlds[i] = bestworlds[i-1];
+				}
+				//now that we shifted all fitnesses under ours down we can put this fitness in
+				bestfitnesses[j]=Worlds[i].getmaxfitness();
+				bestworlds[j] = i;
+				done = true;
+			}
+		}
+	}
+	//now we have the fitness and the index of the n best worlds
+	//get the nodess from the best robot
+	for(int i = 0; i < n; i++){
+		Worlds[bestworlds[i]].getith(inputith[i]);
+		Worlds[bestworlds[i]].gethto(inputhto[i]);
+		Worlds[bestworlds[i]].robots[0].adjustlearningrate((float)1/generations);
+	}
+	for(std::vector<world>::size_type i = 0; i != Worlds.size(); i++) {
+		if(i != bestworld){
+			Worlds[i].newith(inputith[i%n]);
+			Worlds[i].newhto(inputhto[i%n]);
+			Worlds[i].robots[0].adjustlearningrate((float)1/generations);
+			//we need to clone the robots since newith and newhto only update and mutate robot[0]
+			Worlds[i].clonerobots();
+		}
+		Worlds[i].randomizeworld(0);
+	}
+}
+
 void worldmanager::resetfitness(){
 	maxfitness = -2000000;
 	averagefitness = 0;
