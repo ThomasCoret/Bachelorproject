@@ -135,7 +135,7 @@ void experiment(){
 	char yesorno;
 	//no Thomas these are not the same you can't delete filename
 	string filename = "";
-	string finalname = "graphs/solosocialexperiment/";
+	string finalname = "graphs/socialexperiment/";
 	cout<<"save performance? (y/n)\n";
 	cin>>yesorno;
 	yesorno = toupper(yesorno);
@@ -270,7 +270,7 @@ void generationallearning2(bool save, string filename){
 		World.newhto(inputhto);
 		World.newith(inputith);
 		World.clonerobots();
-		string robotname = "robotsaves/solosetting7/";
+		string robotname = "robotsaves/setting7/";
 		robotname += to_string(i);
 		robotname += ".bot";
 		World.savebestrobot(robotname);
