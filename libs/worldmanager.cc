@@ -114,9 +114,20 @@ void worldmanager::update(int n){
 			Worlds[i].robots[0].adjustlearningrate((float)1/generations);
 			//we need to clone the robots since newith and newhto only update and mutate robot[0]
 			Worlds[i].clonerobots();
+			//randomize the last robot and copy it to other robots in case the world has more than 1 robot
+			if(i == Worlds.size()-1 ){
+				Worlds[i].randomizerobots();
+				Worlds[i].clonerobots();
+			}
 		}
+		
 		Worlds[i].randomizeworld(0);
 	}
+	//in case the last world was the best the random robot moves to the world before that
+		if(bestworld == Worlds.size() -1){
+			Worlds[Worlds.size() - 2].randomizerobots();
+			Worlds[Worlds.size() - 2].clonerobots();
+		}
 }
 
 void worldmanager::resetfitness(){

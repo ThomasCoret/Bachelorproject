@@ -4,7 +4,7 @@
 
 using namespace std;
 
-#define generations 1
+#define generations 200
 #define trainingiterations 500
 
 world World;
@@ -135,7 +135,7 @@ void experiment(){
 	char yesorno;
 	//no Thomas these are not the same you can't delete filename
 	string filename = "";
-	string finalname = "graphs/socialexperiment/";
+	string finalname = "graphs/solosetting7random/";
 	cout<<"save performance? (y/n)\n";
 	cin>>yesorno;
 	yesorno = toupper(yesorno);
@@ -243,8 +243,8 @@ void generationallearning2(bool save, string filename){
 	if(save)
 		outputfile.open(filename);
 
-	for(int i = 0; i <100; i++){
-		//outputfile<<i<<":";
+	for(int i = 0; i <10; i++){
+		outputfile<<i<<":";
 		for(int k = 0; k < generations; k++){
 			WM.resetfitness();
 
@@ -255,13 +255,13 @@ void generationallearning2(bool save, string filename){
 			WM.update(5);
 
 			if(save)
-				outputfile<<WM.maxfitness;//<<";";
+				outputfile<<WM.maxfitness<<";";
 
 			cout<<i<<": generation "<<k<<" done. max fitness: "<<WM.maxfitness<<", avg fitness: "<<WM.averagefitness/nworlds<<", learningrate: "<<WM.Worlds[0].robots[0].learningrate<<std::endl;
 		}
 		outputfile<<"\n";
 
-		/* uncomment to not save robot
+		///* uncomment to save robot
 		float inputith[MAX][MAX];
 		float inputhto[MAX][MAX];
 		//copy the best robot to our single world to view it in glut or save it
@@ -270,11 +270,11 @@ void generationallearning2(bool save, string filename){
 		World.newhto(inputhto);
 		World.newith(inputith);
 		World.clonerobots();
-		string robotname = "robotsaves/setting7/";
+		string robotname = "robotsaves/solosetting7random0.2alpha/";
 		robotname += to_string(i);
 		robotname += ".bot";
 		World.savebestrobot(robotname);
-		*/
+		//*/
 		//randomize robots
 		WM.randomizerobots();
 	}
