@@ -252,7 +252,7 @@ void generationallearning2(bool save, string filename){
 				WM.simulate();
 			}
 			//update based on the best 5 worlds the single best world stays the same
-			WM.update(5);
+			WM.update();
 
 			if(save)
 				outputfile<<WM.maxfitness<<";";
