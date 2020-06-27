@@ -4,10 +4,10 @@ import numpy as np
 
 print("hello world")
 
-f = open("graphs/socialexperiment/setting75bestrobots.txt")
+f = open("graphs/solosetting7random/solosetting1.20gen.txt")
 
-cols = 10
-rows = 200
+cols = 100
+rows = 20
 
 #create array
 array = np.empty((cols,rows), dtype=object)
@@ -17,13 +17,11 @@ y = 0
 
 curnumber = ""
 
-count = 0
-
 for line in f:
 	linearray = [0]*rows
+	begin = True
 	for char in line:
-		#skip the first two characters
-		if count > 1:
+		if not begin:
 			#number is finished
 			if char == ';': 
 				#print(str(x) + ";" + str(y) + ":" + curnumber)
@@ -33,18 +31,21 @@ for line in f:
 			else:
 				if char != '\n':
 					curnumber+=char
-		count+=1
+		#skip the first two characters
+		if begin:
+			if char == ':':
+				begin = False
 	y+=1
 	x=0
 	count = 0	
 
 numsum = 0
 
-output = open("graphs/socialexperiment/setting75bestrobots.txt","w+")
+output = open("graphs/solosetting7random/solosetting1.20genavg.txt","w+")
 
 for x in range(rows):
 	for y in range(cols):
 		numsum += array[y,x]
-	output.write(str(x)+";"+str(round(numsum/10,3))+"\n")
+	output.write(str(x)+";"+str(round(numsum/cols,3))+"\n")
 	numsum = 0
 			
