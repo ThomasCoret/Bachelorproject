@@ -33,7 +33,7 @@ robot::robot(float _x, float _y, int _rotation, int _nrobot, float _width){
 	allfoodcollected = false;
 	iterations = 0;
 	generation = 0;
-	startlearningrate = 0.1;
+	startlearningrate = 0.2;
 	endlearningrate = 0.01;
 	learningrate = startlearningrate;
 	//bias
@@ -221,7 +221,7 @@ void robot::adjustlearningrate(float adapt){
 }
 
 float robot::returnfitness(){
-	return foodcollected * 100 + distancetraveled / 10; // + socialfoodcollected * 50;
+	return foodcollected * 100 + distancetraveled / 10 + socialfoodcollected * 50;
 }
 
 void robot::savenodes(std::string filename){

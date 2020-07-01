@@ -11,12 +11,12 @@
 
 world::world(){
 	//world size
-	width = 100;
-	height = 100;
+	width = 350;
+	height = 350;
 
 	//whats in the world
-	nrobots = 1;
-	maxfood = 10;
+	nrobots = 20;
+	maxfood = 100;
 
 	//widths for raycast collision 
 	foodwidth = 2.0;
@@ -142,7 +142,7 @@ void world::simulate(){
 	}
 	//check if world is done
 	if(nfood < 1 && !worlddone){
-		//give all robots a bonus for collecting all food (for simplicity equal to collecting an extra food)
+		//Tell the robots all the food is collected in case of bonus fitness
 		for(std::vector<robot>::size_type j = 0; j < robots.size(); j++) {
 			robots[j].allfoodcollected = true;
 		}
@@ -196,15 +196,23 @@ float world::robotahead(float x, float y, float radius, float rotation, int n, s
 }
 
 float world::castrayfood(float x, float y, float degree){
+	//stores the food that is in range
+	std::vector<food> foodinrange;
+	//sort out the food that is in range for the robot to save performance.
+	for(std::vector<food>::size_type i = 0; i < foods.size(); i++) {
+		//food is in sight range
+		if(foods[i].x > x - raylength && foods[i].x < x + raylength && foods[i].y < y + raylength && foods[i].y > y - raylength)
+			foodinrange.push_back(foods[i]);
+	}
 	//use robot 0's fixrotation since he (should) always exists 
 	degree = robots[0].fixrotation(degree);
 	float originalx = x;
 	float originaly = y;
 	for(float i = 0; i < raylength; i += raystepsize){
-		for(std::vector<food>::size_type j = 0; j < foods.size(); j++) {
-			float fx = foods[j].x;
-			float fy = foods[j].y;
-			float fw = foods[j].width;
+		for(std::vector<food>::size_type j = 0; j < foodinrange.size(); j++) {
+			float fx = foodinrange[j].x;
+			float fy = foodinrange[j].y;
+			float fw = foodinrange[j].width;
 			//collision with food
 			if((fx + fw > x ) && (fx - fw < x) && (fy + fw > y) && (fy - fw< y)){
 				//don't return length just that it has seen food
@@ -223,16 +231,26 @@ float world::castrayfood(float x, float y, float degree){
 }
 
 float world::castrayrobot(float x, float y, float degree, std::vector<robot>::size_type currobot){
+	//stores the robots that are in range
+	std::vector<robot> robotsinrange;
+	//sort out the robots that is in range for the robot to save performance.
+	for(std::vector<robot>::size_type i = 0; i < robots.size(); i++) {
+		//not the current robot
+		if(i != currobot)
+			//robot is in sight range
+			if(robots[i].x > x - raylength && robots[i].x < x + raylength && robots[i].y < y + raylength && robots[i].y > y - raylength)
+				robotsinrange.push_back(robots[i]);
+	}
 	degree = robots[0].fixrotation(degree);
 	float originalx = x;
 	float originaly = y;
 	for(float i = 0; i < raylength; i += raystepsize){
-		for(std::vector<robot>::size_type j = 0; j < robots.size(); j++) {
+		for(std::vector<robot>::size_type j = 0; j < robotsinrange.size(); j++) {
 			//don't check collision with the robot sending the rays (obviously)
 			if(j != currobot){
-				float fx = robots[j].x;
-				float fy = robots[j].y;
-				float fw = robots[j].width;
+				float fx = robotsinrange[j].x;
+				float fy = robotsinrange[j].y;
+				float fw = robotsinrange[j].width;
 				//collision with food
 				if((fx + fw > x ) && (fx - fw < x) && (fy + fw > y) && (fy - fw< y)){
 					//don't return length just that it has seen robot
@@ -329,6 +347,62 @@ void world::updaterobots(float adapt){
 	}
 	currentaveragefitness = avaragefitness / nrobots;
 	currentmaxfitness = maxfitness;
+}
+
+void world::updaterobots(int n){
+	float inputith[n][MAX][MAX];
+	float inputhto[n][MAX][MAX];
+	float bestfitnesses[n];
+	std::vector<robot>::size_type bestrobots[n];
+	for(int i = 0; i<n; i++){
+		bestfitnesses[i] = -2000000;
+		bestrobots[i] = -1;
+	}
+
+	for(std::vector<robot>::size_type i = 0; i != robots.size(); i++) {
+		currentaveragefitness += robots[i].returnfitness();
+		bool done = false;
+		for(int j = 0; j<n && !done; j++){
+			//We found the j'th best robot
+			if(robots[i].returnfitness() > bestfitnesses[j]){
+				//we found the best robot so far
+				if(j == 0){
+					currentmaxfitness = robots[i].returnfitness();
+				}
+				//we need to shift all bestfitnesses one place down under our number. 
+				for(int i = n; i>j; i--){
+					bestfitnesses[i] = bestfitnesses[i-1];
+					bestrobots[i] = bestrobots[i-1];
+				}
+				//now that we shifted all fitnesses under ours down we can put this fitness in
+				bestfitnesses[j] = robots[i].returnfitness();
+				bestrobots[j] = i;
+				done = true;
+			}
+		}
+	}
+	//now we have the fitness and the index of the n best worlds
+	//get the nodess from the best robot
+	for(int i = 0; i < n; i++){
+		robots[bestrobots[i]].returnith(inputith[i]);
+		robots[bestrobots[i]].returnhto(inputhto[i]);
+	}
+	for(std::vector<robot>::size_type i = 0; i != robots.size(); i++) {
+		//we leave in the best robot
+		if(i != bestrobots[0]){
+			robots[i].newith(inputith[i%n]);
+			robots[i].newhto(inputhto[i%n]);
+			//randomize the last robot
+			if(i == robots.size()-1 ){
+				robots[i].randomize();
+			}
+		}
+	}
+	//in case the last world was the best the random robot moves to the world before that
+	if(bestrobots[0] == robots.size() -1){
+		robots[robots.size() - 2].randomize();
+	}
+
 }
 
 char world::robotchar(int nrobot){

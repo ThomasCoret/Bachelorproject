@@ -56,6 +56,8 @@ class world{
 		void checkfoodcollision(std::vector<robot>::size_type);
 		//update the robots based on a generational algorithm
 		void updaterobots(float);
+		//update the robots based on the best n robots.
+		void updaterobots(int);
 		//save the nodes of the best robot to a file
 		void savebestrobot(std::string);
 		//load robot from .bot file
