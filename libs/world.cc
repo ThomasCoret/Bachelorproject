@@ -11,12 +11,12 @@
 
 world::world(){
 	//world size
-	width = 350;
-	height = 350;
+	width = 150;
+	height = 150;
 
 	//whats in the world
-	nrobots = 20;
-	maxfood = 100;
+	nrobots = 3;
+	maxfood = 10;
 
 	//widths for raycast collision 
 	foodwidth = 2.0;

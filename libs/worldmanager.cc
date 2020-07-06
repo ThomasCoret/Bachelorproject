@@ -39,6 +39,9 @@ void worldmanager::update(){
 
 	for(std::vector<world>::size_type i = 0; i != Worlds.size(); i++) {
 		averagefitness += Worlds[i].getmaxfitness();
+		averagefoodcollected += Worlds[i].maxfood - Worlds[i].nfood;
+		if(Worlds[i].maxfood - Worlds[i].nfood > maxfoodcollected)
+			maxfoodcollected = Worlds[i].maxfood - Worlds[i].nfood;
 		//save the world with the best robot
 		if(Worlds[i].getmaxfitness() > maxfitness){
 			maxfitness = Worlds[i].getmaxfitness();
@@ -65,9 +68,9 @@ void worldmanager::update(){
 }
 
 void worldmanager::update(int n){
-	//if there are too few worlds a bestworlds index will be -1 so output is invalid and will likely crash I could use a try catch but thats too much work
+	//if there are too few worlds a bestworlds index will be -1 so output is invalid and will likely crash. I could use a try catch but thats too much work
 	if(n > nworlds){
-		std::cout<<"WARNING: there too few worlds to use: "<<n<<" best worlds please disregard any output!"<<std::endl;
+		std::cout<<"WARNING: there are too few worlds to use: "<<n<<" best worlds please disregard any output!"<<std::endl;
 	}
 	float inputith[n][MAX][MAX];
 	float inputhto[n][MAX][MAX];
@@ -78,7 +81,12 @@ void worldmanager::update(int n){
 		bestworlds[i] = -1;
 	}
 	for(std::vector<world>::size_type i = 0; i != Worlds.size(); i++) {
+		//statistics
 		averagefitness += Worlds[i].getmaxfitness();
+		averagefoodcollected += Worlds[i].maxfood - Worlds[i].nfood;
+		if(Worlds[i].maxfood - Worlds[i].nfood > maxfoodcollected)
+			maxfoodcollected = Worlds[i].maxfood - Worlds[i].nfood;
+
 		bool done = false;
 		for(int j = 0; j<n && !done; j++){
 			//We found the j'th best robot
@@ -124,15 +132,17 @@ void worldmanager::update(int n){
 		Worlds[i].randomizeworld(0);
 	}
 	//in case the last world was the best the random robot moves to the world before that
-		if(bestworld == Worlds.size() -1){
-			Worlds[Worlds.size() - 2].randomizerobots();
-			Worlds[Worlds.size() - 2].clonerobots();
-		}
+	if(bestworld == Worlds.size() -1){
+		Worlds[Worlds.size() - 2].randomizerobots();
+		Worlds[Worlds.size() - 2].clonerobots();
+	}
 }
 
 void worldmanager::resetfitness(){
 	maxfitness = -2000000;
 	averagefitness = 0;
+	maxfoodcollected = 0;
+	averagefoodcollected = 0;
 	bestworld = -1;
 }
 

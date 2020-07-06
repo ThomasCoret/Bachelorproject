@@ -13,6 +13,8 @@ class worldmanager{
 	public:
 		float maxfitness;
 		float averagefitness;
+		int maxfoodcollected;
+		float averagefoodcollected;
 		std::vector<world>::size_type bestworld;	
 		std::vector<world> Worlds;
 

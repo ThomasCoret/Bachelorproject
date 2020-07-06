@@ -135,18 +135,18 @@ void experiment(){
 	char yesorno;
 	//no Thomas these are not the same you can't delete filename
 	string filename = "";
-	string finalname = "graphs/socialreward/notseeotherrobots/";
+	string finalname = "graphs/socialreward/seeotherrobots/";
 	cout<<"save performance? (y/n)\n";
 	cin>>yesorno;
 	yesorno = toupper(yesorno);
 	if(yesorno == 'Y'){
 		savefile = true;
-		cout<<"How do u want to name the file?\n";
+		cout<<"How do u want to name the file (no extensions (.txt) needed)?\n";
 		cin>>filename;
 		finalname += filename;
 		cout<<"saving in :"<<finalname<<endl;
 	}
-	generationallearning(savefile, finalname);
+	generationallearning2(savefile, finalname);
 }
 
 int menu(int argc, char *argv[]){
@@ -258,9 +258,15 @@ void generationallearning2(bool save, string filename){
 
 	//always need to declarate outputfile
 	ofstream outputfile;
+	ofstream outputfile2;
 	//output to file
-	if(save)
+	if(save){
+		string filename2 = filename + "food.txt";
+		filename = filename + ".txt";
 		outputfile.open(filename);
+		//extra file to keep track of the amount of food collected
+		outputfile2.open(filename2);
+	}
 
 	for(int i = 0; i <10; i++){
 		outputfile<<i<<":";
@@ -270,16 +276,21 @@ void generationallearning2(bool save, string filename){
 			for(int j = 0; j < trainingiterations; j++){
 				WM.simulate();
 			}
+
 			//update based on the best 5 worlds the single best world stays the same
 			WM.update(5);
 
-			if(save)
+			if(save){
 				outputfile<<WM.maxfitness<<";";
+				outputfile2<<WM.maxfoodcollected<<"&"<<WM.averagefoodcollected/nworlds<<";";
+			}
 
-			cout<<i<<": generation "<<k<<" done. max fitness: "<<WM.maxfitness<<", avg fitness: "<<WM.averagefitness/nworlds<<", learningrate: "<<WM.Worlds[0].robots[0].learningrate<<std::endl;
+			cout<<i<<": generation "<<k<<" done. max fitness: "<<WM.maxfitness<<", avg fitness: "<<WM.averagefitness/nworlds<<", maxfoodcollected:"<<WM.maxfoodcollected<<", averagefoodcollected: "<<WM.averagefoodcollected/nworlds<<endl;
 		}
-		if(save)
+		if(save){
 			outputfile<<"\n";
+			outputfile2<<"\n";
+		}
 
 		///* uncomment to not save robot
 		float inputith[MAX][MAX];
@@ -290,7 +301,7 @@ void generationallearning2(bool save, string filename){
 		World.newhto(inputhto);
 		World.newith(inputith);
 		World.clonerobots();
-		string robotname = "robotsaves/socialreward/notseeotherrobots/";
+		string robotname = "robotsaves/socialreward/seeotherrobots/50social/";
 		robotname += to_string(i);
 		robotname += ".bot";
 		World.savebestrobot(robotname);
@@ -298,8 +309,10 @@ void generationallearning2(bool save, string filename){
 		//randomize robots
 		WM.randomizerobots();
 	}
-	if(save)	
+	if(save){
 		outputfile.close();
+		outputfile2.close();
+	}
 
 	float inputith[MAX][MAX];
 	float inputhto[MAX][MAX];

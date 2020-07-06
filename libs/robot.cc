@@ -21,7 +21,7 @@ robot::robot(float _x, float _y, int _rotation, int _nrobot, float _width){
  	turnspeed = 45.0;
 
  	//neural network
-	inputs = 6;
+	inputs = 9;
 	outputs = 2;
 	hiddenlayers = 4;
 
