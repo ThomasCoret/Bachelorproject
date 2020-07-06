@@ -2,15 +2,16 @@
 
 import numpy as np
 
-print("hello world")
 
-f = open("graphs/socialreward/notseeotherrobots/100social50real.txt")
+
+f = open("graphs/socialreward/notseeotherrobots/baselinefood.txt")
 
 cols = 10
 rows = 120
 
 #create array
 array = np.empty((cols,rows), dtype=object)
+array2 = np.empty((cols,rows), dtype=object)
 
 x = 0
 y = 0
@@ -20,17 +21,27 @@ curnumber = ""
 for line in f:
 	linearray = [0]*rows
 	begin = True
+	first = True
 	for char in line:
+		#print(char)
 		if not begin:
 			#number is finished
-			if char == ';': 
+			if char == ';' or char == '&': 
+				#print("kutzooi")
 				#print(str(x) + ";" + str(y) + ":" + curnumber)
-				array[y,x] = float(curnumber)
+				if first:
+					array[y,x] = int(curnumber)
+					first = False
+				else:
+					array2[y,x] = float(curnumber)
+					first = True
+					x+=1
 				curnumber = ""
-				x+=1
+				
 			else:
 				if char != '\n':
 					curnumber+=char
+					
 		#skip the first two characters
 		if begin:
 			if char == ':':
@@ -41,11 +52,20 @@ for line in f:
 
 numsum = 0
 
-output = open("graphs/socialreward/notseeotherrobots/100social50realavg.txt","w+")
+output = open("graphs/socialreward/notseeotherrobots/baselineavgfoodavg.txt","w+")
+
+for x in range(rows):
+	for y in range(cols):
+		numsum += array2[y,x]
+	output.write(str(x)+";"+str(round(numsum/cols,3))+"\n")
+	numsum = 0
+	
+output = open("graphs/socialreward/notseeotherrobots/baselinemaxfoodavg.txt","w+")
 
 for x in range(rows):
 	for y in range(cols):
 		numsum += array[y,x]
 	output.write(str(x)+";"+str(round(numsum/cols,3))+"\n")
 	numsum = 0
-			
+	
+print("hello world")
