@@ -4,10 +4,10 @@ import numpy as np
 
 print("hello world")
 
-f = open("graphs/solosetting7random/solosetting1.20gen.txt")
+f = open("graphs/socialreward/notseeotherrobots/100social50real.txt")
 
-cols = 100
-rows = 20
+cols = 10
+rows = 120
 
 #create array
 array = np.empty((cols,rows), dtype=object)
@@ -41,7 +41,7 @@ for line in f:
 
 numsum = 0
 
-output = open("graphs/solosetting7random/solosetting1.20genavg.txt","w+")
+output = open("graphs/socialreward/notseeotherrobots/100social50realavg.txt","w+")
 
 for x in range(rows):
 	for y in range(cols):
