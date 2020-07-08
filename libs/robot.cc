@@ -221,7 +221,7 @@ void robot::adjustlearningrate(float adapt){
 }
 
 float robot::returnfitness(){
-	return foodcollected * 100 + distancetraveled / 10 + socialfoodcollected * 50;
+	return foodcollected * 50 + distancetraveled / 10 + socialfoodcollected * 100;
 }
 
 void robot::savenodes(std::string filename){
