@@ -4,7 +4,7 @@ import numpy as np
 
 
 
-f = open("graphs/socialreward/notseeotherrobots/baselinefood.txt")
+f = open("graphs/socialreward/notseeotherrobots/100social50realfood.txt")
 
 cols = 10
 rows = 120
@@ -23,12 +23,9 @@ for line in f:
 	begin = True
 	first = True
 	for char in line:
-		#print(char)
 		if not begin:
 			#number is finished
 			if char == ';' or char == '&': 
-				#print("kutzooi")
-				#print(str(x) + ";" + str(y) + ":" + curnumber)
 				if first:
 					array[y,x] = int(curnumber)
 					first = False
@@ -52,7 +49,7 @@ for line in f:
 
 numsum = 0
 
-output = open("graphs/socialreward/notseeotherrobots/baselineavgfoodavg.txt","w+")
+output = open("graphs/socialreward/seeotherrobots/100social50realavgfoodavg.txt","w+")
 
 for x in range(rows):
 	for y in range(cols):
@@ -60,7 +57,7 @@ for x in range(rows):
 	output.write(str(x)+";"+str(round(numsum/cols,3))+"\n")
 	numsum = 0
 	
-output = open("graphs/socialreward/notseeotherrobots/baselinemaxfoodavg.txt","w+")
+output = open("graphs/socialreward/seeotherrobots/100social50realmaxfoodavg.txt","w+")
 
 for x in range(rows):
 	for y in range(cols):
