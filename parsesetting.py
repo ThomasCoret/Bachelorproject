@@ -4,7 +4,7 @@ import numpy as np
 
 
 
-f = open("graphs/socialreward/notseeotherrobots/100social50realfood.txt")
+f = open("graphs/socialreward/seeotherrobots/baselinefood.txt")
 
 cols = 10
 rows = 120
@@ -49,7 +49,7 @@ for line in f:
 
 numsum = 0
 
-output = open("graphs/socialreward/seeotherrobots/100social50realavgfoodavg.txt","w+")
+output = open("graphs/socialreward/seeotherrobots/baselineavgfoodavg.txt","w+")
 
 for x in range(rows):
 	for y in range(cols):
@@ -57,7 +57,7 @@ for x in range(rows):
 	output.write(str(x)+";"+str(round(numsum/cols,3))+"\n")
 	numsum = 0
 	
-output = open("graphs/socialreward/seeotherrobots/100social50realmaxfoodavg.txt","w+")
+output = open("graphs/socialreward/seeotherrobots/baselinemaxfoodavg.txt","w+")
 
 for x in range(rows):
 	for y in range(cols):
